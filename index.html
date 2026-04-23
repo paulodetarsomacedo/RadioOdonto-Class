@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RadioOdonto - Laudo Neumórfico</title>
+    
+    <!-- Bibliotecas Necessárias -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* =========================================
+           VÁRIAVEIS E DESIGN NEUMÓRFICO GERAL
+           ========================================= */
+        :root {
+            --bg-color: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --primary-color: #3b82f6; /* Azul Tailwind */
+            --text-color: #4b5563;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            overflow-x: hidden; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+        }
+
+        /* Oculta scrollbar mas permite rolar */
+        .no-scrollbar { scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Classes Neumórficas */
+        .neo-panel {
+            background: var(--bg-color);
+            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            border-radius: 1.5rem;
+        }
+        
+        .neo-button {
+            background: var(--bg-color);
+            box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .neo-button:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            transform: scale(0.98);
+        }
+        
+        .neo-pressed {
+            background: var(--bg-color);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            border-radius: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .neo-inset {
+            background: var(--bg-color);
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            border-radius: 1rem;
+        }
+
+        /* "Negatoscópio" onde o Canvas ficará */
+        .neo-screen {
+            background: #1f2328;
+            box-shadow: inset 10px 10px 20px #111316, inset -10px -10px 20px #2d333a;
+            border-radius: 1rem;
+        }
+
+        /* Overlays e Layouts */
+        #overlay-schema { resize: both; overflow: hidden; }
+        #overlay-body { touch-action: none; /* Impede que toque arraste a tela inteira */ }
+        .canvas-container { margin: 0 auto; }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <!-- Header & Navegação Neumórfica -->
+    <header class="p-4 flex flex-col gap-4 z-10">
+        <div class="text-center text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm">
+            <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto
+        </div>
+        
+        <nav class="flex justify-around gap-4 px-2">
+            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-3 neo-pressed text-sm sm:text-base">Anatomia</button>
+            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-3 neo-button text-sm sm:text-base">Estudo</button>
+            <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-3 neo-button text-sm sm:text-base">Relatório</button>
+        </nav>
+    </header>
+
+    <!-- Área Principal de Conteúdo -->
+    <main class="flex-1 overflow-y-auto relative px-4 pb-4">
+        
+        <!-- ============================================== -->
+        <!-- ABA ANATOMIA (Área de Trabalho)                -->
+        <!-- ============================================== -->
+        <div id="aba-anatomia" class="block h-full flex flex-col gap-4">
+            
+            <!-- Upload e Select -->
+            <div class="neo-panel p-4 flex gap-3 flex-wrap items-center justify-between z-10">
+                <label class="neo-button px-5 py-3 cursor-pointer text-sm flex items-center gap-2 hover:text-blue-600">
+                    <i class="fa-solid fa-camera"></i> Subir Radiografia
+                    <input type="file" id="image-upload" accept="image/*" class="hidden">
+                </label>
+                <div class="flex-1 min-w-[200px] relative">
+                    <select id="overlay-selector" onchange="mostrarOverlay(this.value)" class="w-full neo-inset p-3 rounded-lg text-sm appearance-none outline-none text-gray-600 bg-transparent font-semibold">
+                        <option value="">+ Inserir Esquema Overlay</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-4 pointer-events-none text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Ferramentas de Desenho -->
+            <div class="neo-panel px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar items-center z-10">
+                <button onclick="setTool('pan')" id="btn-pan" class="px-4 py-3 neo-pressed text-blue-500 min-w-max"><i class="fa-solid fa-hand"></i> Pan</button>
+                <button onclick="setTool('draw')" id="btn-draw" class="px-4 py-3 neo-button text-red-500 min-w-max"><i class="fa-solid fa-pen"></i> Pincel</button>
+                <button onclick="addText()" class="px-4 py-3 neo-button text-green-600 min-w-max"><i class="fa-solid fa-font"></i> Texto</button>
+                <button onclick="addLine()" class="px-4 py-3 neo-button text-yellow-500 min-w-max"><i class="fa-solid fa-minus"></i> Linha</button>
+                <button onclick="addArrow()" class="px-4 py-3 neo-button text-purple-500 min-w-max"><i class="fa-solid fa-arrow-right"></i> Seta</button>
+                <button onclick="addPolygon()" class="px-4 py-3 neo-button text-teal-500 min-w-max"><i class="fa-solid fa-play"></i> Área</button>
+                
+                <div class="w-px h-8 bg-gray-300 mx-2 shadow-[1px_0_1px_white]"></div> <!-- Separador neumórfico -->
+                
+                <button onclick="deleteSelected()" class="px-4 py-3 neo-button text-red-400 min-w-max"><i class="fa-solid fa-eraser"></i> Apagar</button>
+                <button onclick="clearCanvas()" class="px-4 py-3 neo-button text-red-600 min-w-max"><i class="fa-solid fa-trash"></i> Limpar Tudo</button>
+                
+                <div class="w-px h-8 bg-gray-300 mx-2 shadow-[1px_0_1px_white]"></div>
+                
+                <button onclick="saveImage()" class="px-5 py-3 neo-button text-blue-600 min-w-max uppercase tracking-wider"><i class="fa-solid fa-save"></i> Salvar Laudo</button>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="canvas-wrapper" class="flex-1 neo-screen relative flex justify-center items-center">
+                <canvas id="fabric-canvas"></canvas>
+                <!-- Controles de Zoom da Radiografia -->
+                <div class="absolute bottom-4 right-4 flex flex-col gap-3 z-40">
+                    <button onclick="zoomCanvas(1.2)" class="w-12 h-12 neo-button flex items-center justify-center text-xl hover:text-blue-600">+</button>
+                    <button onclick="zoomCanvas(0.8)" class="w-12 h-12 neo-button flex items-center justify-center text-xl hover:text-blue-600">-</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ABA ESTUDO (Neumórfica com Lightbox)           -->
+        <!-- ============================================== -->
+        <div id="aba-estudo" class="hidden h-full flex-col">
+            <h2 class="text-xl font-extrabold mb-4 text-center text-gray-500 uppercase tracking-widest mt-2">Esquemas de Referência</h2>
+            <div id="estudo-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-2 pb-10">
+                <!-- Imagens injetadas via JS -->
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ABA RELATÓRIO                                  -->
+        <!-- ============================================== -->
+        <div id="aba-relatorio" class="hidden h-full flex flex-col gap-4">
+            <h2 class="text-xl font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Salvas</h2>
+            
+            <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
+                <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda. Faça seus desenhos e clique em "Salvar Laudo".</p>
+            </div>
+            
+            <div class="neo-panel p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="gerarPDF(false)" class="w-full py-4 neo-button text-red-500 flex items-center justify-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar Arquivo PDF</button>
+                <button onclick="gerarPDF(true)" class="w-full py-4 neo-button text-green-500 flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp"></i> Compartilhar (Whats/Email)</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- OVERLAY MODAL (Arrastar, Redimensionar, Zoom/Pan) -->
+    <!-- ============================================== -->
+    <div id="overlay-schema" class="hidden absolute top-48 left-10 neo-panel z-50 flex flex-col w-64 h-64 max-w-[90vw] bg-[#e0e5ec]">
+        <!-- Cabeçalho (Para arrastar o modal e botões de zoom) -->
+        <div id="overlay-header" class="px-3 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
+            <span class="font-bold text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
+            <div class="flex items-center gap-2 pointer-events-auto">
+                <button onclick="zoomOverlayImg(0.8)" class="neo-button w-6 h-6 flex items-center justify-center text-xs">-</button>
+                <button onclick="zoomOverlayImg(1.2)" class="neo-button w-6 h-6 flex items-center justify-center text-xs">+</button>
+                <button onclick="fecharOverlay()" class="neo-button w-6 h-6 flex items-center justify-center text-xs text-red-500 ml-2">X</button>
+            </div>
+        </div>
+        <!-- Corpo (onde fica a imagem, suporta pan e zoom) -->
+        <div id="overlay-body" class="flex-1 neo-inset m-2 overflow-hidden relative cursor-grab flex items-center justify-center">
+            <img id="overlay-img" src="" class="max-w-none max-h-none origin-center pointer-events-none" style="transform: translate(0px, 0px) scale(1);" />
+        </div>
+        <!-- Indicador de Redimensionamento -->
+        <div class="absolute bottom-0 right-0 p-1 pointer-events-none text-gray-400 text-[10px]">
+            <i class="fa-solid fa-arrow-up-right-dots fa-flip-horizontal"></i>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- LIGHTBOX (Tela cheia para aba Estudo)          -->
+    <!-- ============================================== -->
+    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-center items-center p-4 transition-opacity">
+        <button onclick="fecharLightbox()" class="absolute top-6 right-6 neo-button w-12 h-12 text-2xl text-red-500 font-bold">&times;</button>
+        <h3 id="lightbox-title" class="text-gray-600 text-2xl mb-6 font-extrabold uppercase tracking-widest drop-shadow-sm"></h3>
+        <div class="neo-panel p-4 max-w-full max-h-[75vh]">
+            <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] object-contain rounded-xl mix-blend-multiply">
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- LÓGICA JAVASCRIPT                              -->
+    <!-- ============================================== -->
+    <script>
+        // Imagens do seu PDF
+        const esquemasAnatomicos =[
+            { id: '1', nome: 'Incisivos Sup', url: 'incisivos_sup.jpg' },
+            { id: '2', nome: 'Caninos Sup', url: 'caninos_sup.jpg' },
+            { id: '3', nome: 'Pré-molares Sup', url: 'pre_molares_sup.jpg' },
+            { id: '4', nome: 'Molares Sup', url: 'molares_sup.jpg' },
+            { id: '5', nome: 'Incisivos Inf', url: 'incisivos_inf.jpg' },
+            { id: '6', nome: 'Caninos Inf', url: 'caninos_inf.jpg' },
+            { id: '7', nome: 'Pré-molares Inf', url: 'pre_molares_inf.jpg' },
+            { id: '8', nome: 'Molares Inf', url: 'molares_inf.jpg' }
+        ];
+
+        let canvas;
+        let isPanning = true; 
+        let imagensSalvas =[];
+
+        // Controle da imagem interna do Overlay
+        let olZoom = 1;
+        let olPosX = 0, olPosY = 0;
+        let isOlDragging = false;
+        let olStartX, olStartY;
+
+        window.onload = () => {
+            initCanvas();
+            carregarEstudos();
+            configurarDraggableModal();
+            configurarPanZoomOverlayImage();
+            setTool('pan'); // Começa no modo mover
+        };
+
+        // NAVEGAÇÃO
+        function mudarAba(aba) {['anatomia', 'estudo', 'relatorio'].forEach(a => {
+                document.getElementById(`aba-${a}`).classList.add('hidden');
+                document.getElementById(`aba-${a}`).classList.remove('block', 'flex');
+                
+                let btn = document.getElementById(`tab-btn-${a}`);
+                btn.className = "flex-1 py-3 text-sm sm:text-base neo-button transition"; // Reseta estado
+            });
+
+            const current = document.getElementById(`aba-${aba}`);
+            current.classList.remove('hidden');
+            current.classList.add(aba === 'anatomia' ? 'block' : 'flex');
+            
+            let btnAtivo = document.getElementById(`tab-btn-${aba}`);
+            btnAtivo.className = "flex-1 py-3 text-sm sm:text-base neo-pressed transition"; // Estado afundado
+
+            if(aba === 'anatomia' && canvas) canvas.calcOffset();
+        }
+
+        // CANVAS SETUP
+        function initCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas = new fabric.Canvas('fabric-canvas', {
+                width: wrapper.clientWidth,
+                height: wrapper.clientHeight,
+                isDrawingMode: false,
+                selection: true
+            });
+            
+            canvas.freeDrawingBrush.color = "#FF3333";
+            canvas.freeDrawingBrush.width = 3;
+
+            // Pan da Tela
+            canvas.on('mouse:down', function(opt) {
+                var evt = opt.e;
+                if (isPanning) {
+                    this.isDragging = true;
+                    this.selection = false;
+                    this.lastPosX = evt.clientX || (evt.touches ? evt.touches[0].clientX : 0);
+                    this.lastPosY = evt.clientY || (evt.touches ? evt.touches[0].clientY : 0);
+                }
+            });
+            canvas.on('mouse:move', function(opt) {
+                if (this.isDragging) {
+                    var e = opt.e;
+                    var clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                    var clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    var vpt = this.viewportTransform;
+                    vpt[4] += clientX - this.lastPosX;
+                    vpt[5] += clientY - this.lastPosY;
+                    this.requestRenderAll();
+                    this.lastPosX = clientX;
+                    this.lastPosY = clientY;
+                }
+            });
+            canvas.on('mouse:up', function() {
+                this.isDragging = false;
+                this.selection = true;
+            });
+
+            // Zoom da tela (scroll)
+            canvas.on('mouse:wheel', function(opt) {
+                var delta = opt.e.deltaY;
+                var zoom = canvas.getZoom();
+                zoom *= 0.999 ** delta;
+                if (zoom > 10) zoom = 10;
+                if (zoom < 0.1) zoom = 0.1;
+                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+            });
+
+            window.addEventListener('resize', () => {
+                canvas.setWidth(wrapper.clientWidth);
+                canvas.setHeight(wrapper.clientHeight);
+            });
+        }
+
+        // UPLOAD
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                fabric.Image.fromURL(f.target.result, function(img) {
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.95;
+                    img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
+                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // FERRAMENTAS
+        function resetToolsUI() {
+            const btns =['pan', 'draw'];
+            btns.forEach(b => {
+                let elem = document.getElementById(`btn-${b}`);
+                elem.classList.remove('neo-pressed');
+                elem.classList.add('neo-button');
+            });
+            canvas.isDrawingMode = false;
+            canvas.forEachObject(o => o.selectable = true);
+            isPanning = false;
+        }
+
+        function setTool(tool) {
+            resetToolsUI();
+            let btn = document.getElementById(`btn-${tool}`);
+            btn.classList.remove('neo-button');
+            btn.classList.add('neo-pressed');
+
+            if(tool === 'pan') {
+                isPanning = true;
+                canvas.forEachObject(o => o.selectable = false);
+            } else if (tool === 'draw') {
+                canvas.isDrawingMode = true;
+            }
+        }
+
+        function addText() {
+            setTool('pan');
+            const text = new fabric.IText('Clique p/ Editar', {
+                left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center',
+                fontFamily: 'Arial', fill: '#10B981', fontSize: 24, editable: true, fontWeight: 'bold'
+            });
+            canvas.add(text);
+            canvas.setActiveObject(text);
+        }
+
+        function addLine() {
+            setTool('pan');
+            const line = new fabric.Line([50, 50, 200, 50], {
+                stroke: '#F59E0B', strokeWidth: 4, selectable: true, hasControls: true, hasBorders: true,
+                left: canvas.width / 2 - 75, top: canvas.height / 2
+            });
+            canvas.add(line);
+        }
+
+        function addPolygon() {
+            setTool('pan');
+            const triangle = new fabric.Triangle({
+                width: 100, height: 100, fill: 'transparent', stroke: '#14B8A6', strokeWidth: 4,
+                left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center'
+            });
+            canvas.add(triangle);
+        }
+
+        function addArrow() {
+            setTool('pan');
+            const line = new fabric.Line([0, 0, 100, 0], { stroke: '#A855F7', strokeWidth: 4 });
+            const head = new fabric.Triangle({ width: 18, height: 18, fill: '#A855F7', left: 100, top: 0, originX: 'center', originY: 'center', angle: 90 });
+            const arrow = new fabric.Group([line, head], { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' });
+            canvas.add(arrow);
+        }
+
+        function deleteSelected() {
+            const act = canvas.getActiveObjects();
+            if(act.length) { act.forEach(obj => canvas.remove(obj)); canvas.discardActiveObject(); }
+        }
+
+        function clearCanvas() {
+            if(confirm('Apagar apenas os desenhos? (A foto continuará)')) {
+                canvas.getObjects().forEach(o => canvas.remove(o));
+            }
+        }
+
+        function zoomCanvas(fator) {
+            let zoom = canvas.getZoom() * fator;
+            if (zoom > 10) zoom = 10;
+            if (zoom < 0.1) zoom = 0.1;
+            canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
+        }
+
+        // ABA ESTUDO - CARREGAR
+        function carregarEstudos() {
+            const grid = document.getElementById('estudo-grid');
+            const select = document.getElementById('overlay-selector');
+            
+            esquemasAnatomicos.forEach(esq => {
+                grid.innerHTML += `
+                    <div onclick="abrirLightbox('${esq.url}', '${esq.nome}')" 
+                         class="neo-panel p-4 flex flex-col items-center cursor-pointer transition transform hover:scale-105 active:scale-95">
+                        <div class="neo-inset w-full h-40 flex items-center justify-center p-2 mb-4 overflow-hidden">
+                            <img src="${esq.url}" onerror="this.src='https://via.placeholder.com/400x300?text=Falta+${esq.url}'" 
+                                 class="w-full h-full object-contain mix-blend-multiply drop-shadow-sm" alt="${esq.nome}">
+                        </div>
+                        <h3 class="font-bold text-gray-600 text-sm tracking-wide uppercase">${esq.nome}</h3>
+                    </div>
+                `;
+                select.innerHTML += `<option value="${esq.url}">${esq.nome}</option>`;
+            });
+        }
+
+        function abrirLightbox(url, nome) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox-title').innerText = nome;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+
+        function fecharLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.getElementById('lightbox-img').src = '';
+        }
+
+        // OVERLAY MODAL (O esquema por cima da radiografia)
+        function mostrarOverlay(url) {
+            const overlay = document.getElementById('overlay-schema');
+            if (!url) { overlay.classList.add('hidden'); return; }
+            
+            // Resetar pan/zoom da imagem
+            olZoom = 1; olPosX = 0; olPosY = 0;
+            atualizarOverlayTransform();
+            
+            document.getElementById('overlay-img').src = url;
+            overlay.classList.remove('hidden');
+        }
+
+        function fecharOverlay() {
+            document.getElementById('overlay-schema').classList.add('hidden');
+            document.getElementById('overlay-selector').value = "";
+        }
+
+        // OVERLAY - ARRASTAR A JANELA
+        function configurarDraggableModal() {
+            const overlay = document.getElementById('overlay-schema');
+            const header = document.getElementById('overlay-header');
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+            header.onmousedown = dragMouseDown;
+            header.ontouchstart = dragMouseDown;
+
+            function dragMouseDown(e) {
+                // Ignorar se clicou nos botoes de fechar/zoom
+                if(e.target.tagName.toLowerCase() === 'button') return; 
+                e = e || window.event;
+                let touch = e.touches ? e.touches[0] : e;
+                pos3 = touch.clientX; pos4 = touch.clientY;
+                document.onmouseup = closeDragElement;
+                document.ontouchend = closeDragElement;
+                document.onmousemove = elementDrag;
+                document.ontouchmove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                let touch = e.touches ? e.touches[0] : e;
+                pos1 = pos3 - touch.clientX; pos2 = pos4 - touch.clientY;
+                pos3 = touch.clientX; pos4 = touch.clientY;
+                overlay.style.top = (overlay.offsetTop - pos2) + "px";
+                overlay.style.left = (overlay.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null; document.onmousemove = null;
+                document.ontouchend = null; document.ontouchmove = null;
+            }
+        }
+
+        // OVERLAY - ZOOM E PAN NA IMAGEM INTERNA
+        function atualizarOverlayTransform() {
+            const img = document.getElementById('overlay-img');
+            img.style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`;
+        }
+
+        function zoomOverlayImg(fator) {
+            olZoom *= fator;
+            if (olZoom < 0.2) olZoom = 0.2;
+            if (olZoom > 5) olZoom = 5;
+            atualizarOverlayTransform();
+        }
+
+        function configurarPanZoomOverlayImage() {
+            const olBody = document.getElementById('overlay-body');
+            
+            // Mouse Wheel para Zoom
+            olBody.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if(e.deltaY < 0) zoomOverlayImg(1.1);
+                else zoomOverlayImg(0.9);
+            });
+
+            // Mouse & Touch Pan (Arrastar Imagem)
+            const downEvent = (e) => {
+                isOlDragging = true;
+                olBody.style.cursor = 'grabbing';
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                olStartX = clientX - olPosX;
+                olStartY = clientY - olPosY;
+            };
+
+            const moveEvent = (e) => {
+                if(!isOlDragging) return;
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                olPosX = clientX - olStartX;
+                olPosY = clientY - olStartY;
+                atualizarOverlayTransform();
+            };
+
+            const upEvent = () => {
+                isOlDragging = false;
+                olBody.style.cursor = 'grab';
+            };
+
+            olBody.addEventListener('mousedown', downEvent);
+            window.addEventListener('mousemove', moveEvent);
+            window.addEventListener('mouseup', upEvent);
+
+            olBody.addEventListener('touchstart', downEvent);
+            window.addEventListener('touchmove', moveEvent);
+            window.addEventListener('touchend', upEvent);
+        }
+
+        // SALVAR LAUDO E GERAR PDF
+        function saveImage() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            const currentZoom = canvas.getZoom();
+            const currentVpt = canvas.viewportTransform.slice();
+            canvas.setZoom(1);
+            canvas.viewportTransform =[1,0,0,1,0,0];
+            
+            const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 1.0 }); // jpeg = mais leve e sem borda preta
+            
+            canvas.setViewportTransform(currentVpt);
+            canvas.setZoom(currentZoom);
+
+            imagensSalvas.push(dataUrl);
+            atualizarGaleriaSalvas();
+            alert("Sucesso! Imagem inserida no Relatório.");
+        }
+
+        function atualizarGaleriaSalvas() {
+            const div = document.getElementById('galeria-salvas');
+            div.innerHTML = "";
+            if(imagensSalvas.length === 0) {
+                div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`;
+                return;
+            }
+            imagensSalvas.forEach((img, idx) => {
+                div.innerHTML += `
+                    <div class="relative neo-panel p-2 flex items-center justify-center">
+                        <img src="${img}" class="w-full h-32 object-cover rounded-xl border border-gray-300">
+                        <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded shadow-md">Fig. ${idx+1}</div>
+                    </div>
+                `;
+            });
+        }
+
+        async function gerarPDF(compartilhar) {
+            if(imagensSalvas.length === 0) { alert("Nenhuma imagem para o relatório."); return; }
+            
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            
+            pdf.setFontSize(22);
+            pdf.setTextColor(59, 130, 246);
+            pdf.text("Laudo Radiográfico", 15, 20);
+            
+            pdf.setFontSize(12);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`Data: ${new Date().toLocaleDateString()}`, 15, 30);
+            pdf.line(15, 35, pageWidth - 15, 35);
+
+            let yOffset = 45;
+            for(let i=0; i<imagensSalvas.length; i++) {
+                if (yOffset > 210) { pdf.addPage(); yOffset = 20; }
+                pdf.setFontSize(14);
+                pdf.setFont(undefined, 'bold');
+                pdf.text(`Imagem ${i+1}:`, 15, yOffset);
+                
+                pdf.setDrawColor(200, 200, 200);
+                pdf.rect(15, yOffset + 5, pageWidth - 30, 100);
+                pdf.addImage(imagensSalvas[i], 'JPEG', 15, yOffset + 5, pageWidth - 30, 100);
+                
+                yOffset += 115;
+            }
+
+            if (compartilhar) {
+                try {
+                    const pdfBlob = pdf.output('blob');
+                    const file = new File([pdfBlob], "Laudo_Neumorfico.pdf", { type: "application/pdf" });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files:[file],
+                            title: 'Laudo Neumórfico',
+                            text: 'Segue em anexo o laudo radiográfico.'
+                        });
+                    } else {
+                        alert("Seu aparelho/navegador não suporta envio direto. O PDF será baixado.");
+                        pdf.save("Laudo_Neumorfico.pdf");
+                    }
+                } catch (error) {
+                    console.log("Erro ao compartilhar", error);
+                }
+            } else {
+                pdf.save("Laudo_Neumorfico.pdf");
+            }
+        }
+    </script>
+</body>
+</html>
