@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <!-- user-scalable=no impede o zoom automático de acessibilidade do Safari que quebra o app -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RadioOdonto - Laudo Neumórfico</title>
     
@@ -12,14 +13,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        /* =========================================
-           VÁRIAVEIS E DESIGN NEUMÓRFICO GERAL
-           ========================================= */
         :root {
             --bg-color: #e0e5ec;
             --shadow-light: #ffffff;
             --shadow-dark: #a3b1c6;
-            --primary-color: #3b82f6; /* Azul Tailwind */
+            --primary-color: #3b82f6;
             --text-color: #4b5563;
         }
 
@@ -28,13 +26,14 @@
             overflow-x: hidden; 
             background-color: var(--bg-color); 
             color: var(--text-color);
+            /* Impede a seleção de texto acidental ao clicar rápido no celular */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* Oculta scrollbar mas permite rolar */
         .no-scrollbar { scrollbar-width: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* Classes Neumórficas */
         .neo-panel {
             background: var(--bg-color);
             box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
@@ -69,22 +68,24 @@
             border-radius: 1rem;
         }
 
-        /* "Negatoscópio" onde o Canvas ficará */
         .neo-screen {
             background: #1f2328;
             box-shadow: inset 10px 10px 20px #111316, inset -10px -10px 20px #2d333a;
             border-radius: 1rem;
         }
 
-        /* Overlays e Layouts */
+        /* Trava essencial para o iPhone não puxar a tela ao desenhar */
+        #canvas-wrapper, .canvas-container {
+            touch-action: none !important; 
+            margin: 0 auto;
+        }
+
         #overlay-schema { resize: both; overflow: hidden; }
-        #overlay-body { touch-action: none; /* Impede que toque arraste a tela inteira */ }
-        .canvas-container { margin: 0 auto; }
+        #overlay-body { touch-action: none; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- Header & Navegação Neumórfica -->
     <header class="p-4 flex flex-col gap-4 z-10">
         <div class="text-center text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm">
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto
@@ -97,15 +98,11 @@
         </nav>
     </header>
 
-    <!-- Área Principal de Conteúdo -->
-    <main class="flex-1 overflow-y-auto relative px-4 pb-4">
+    <main class="flex-1 overflow-y-auto relative px-4 pb-4 flex flex-col">
         
-        <!-- ============================================== -->
-        <!-- ABA ANATOMIA (Área de Trabalho)                -->
-        <!-- ============================================== -->
-        <div id="aba-anatomia" class="block h-full flex flex-col gap-4">
+        <!-- ABA ANATOMIA -->
+        <div id="aba-anatomia" class="flex-1 flex flex-col gap-4 h-full">
             
-            <!-- Upload e Select -->
             <div class="neo-panel p-4 flex gap-3 flex-wrap items-center justify-between z-10">
                 <label class="neo-button px-5 py-3 cursor-pointer text-sm flex items-center gap-2 hover:text-blue-600">
                     <i class="fa-solid fa-camera"></i> Subir Radiografia
@@ -119,70 +116,59 @@
                 </div>
             </div>
 
-            <!-- Ferramentas de Desenho -->
+            <!-- Ferramentas -->
             <div class="neo-panel px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar items-center z-10">
-                <button onclick="setTool('pan')" id="btn-pan" class="px-4 py-3 neo-pressed text-blue-500 min-w-max"><i class="fa-solid fa-hand"></i> Pan</button>
+                <!-- Nova Ferramenta: Selecionar -->
+                <button onclick="setTool('edit')" id="btn-edit" class="px-4 py-3 neo-pressed text-gray-700 min-w-max"><i class="fa-solid fa-arrow-pointer"></i> Selecionar</button>
+                <button onclick="setTool('pan')" id="btn-pan" class="px-4 py-3 neo-button text-blue-500 min-w-max"><i class="fa-solid fa-hand"></i> Mover Tela</button>
                 <button onclick="setTool('draw')" id="btn-draw" class="px-4 py-3 neo-button text-red-500 min-w-max"><i class="fa-solid fa-pen"></i> Pincel</button>
+                <div class="w-px h-8 bg-gray-300 mx-1 shadow-[1px_0_1px_white]"></div>
+                
                 <button onclick="addText()" class="px-4 py-3 neo-button text-green-600 min-w-max"><i class="fa-solid fa-font"></i> Texto</button>
                 <button onclick="addLine()" class="px-4 py-3 neo-button text-yellow-500 min-w-max"><i class="fa-solid fa-minus"></i> Linha</button>
                 <button onclick="addArrow()" class="px-4 py-3 neo-button text-purple-500 min-w-max"><i class="fa-solid fa-arrow-right"></i> Seta</button>
                 <button onclick="addPolygon()" class="px-4 py-3 neo-button text-teal-500 min-w-max"><i class="fa-solid fa-play"></i> Área</button>
                 
-                <div class="w-px h-8 bg-gray-300 mx-2 shadow-[1px_0_1px_white]"></div> <!-- Separador neumórfico -->
+                <div class="w-px h-8 bg-gray-300 mx-1 shadow-[1px_0_1px_white]"></div>
                 
-                <button onclick="deleteSelected()" class="px-4 py-3 neo-button text-red-400 min-w-max"><i class="fa-solid fa-eraser"></i> Apagar</button>
+                <button onclick="deleteSelected()" class="px-4 py-3 neo-button text-red-400 min-w-max"><i class="fa-solid fa-eraser"></i> Apagar Item</button>
                 <button onclick="clearCanvas()" class="px-4 py-3 neo-button text-red-600 min-w-max"><i class="fa-solid fa-trash"></i> Limpar Tudo</button>
                 
-                <div class="w-px h-8 bg-gray-300 mx-2 shadow-[1px_0_1px_white]"></div>
+                <div class="w-px h-8 bg-gray-300 mx-1 shadow-[1px_0_1px_white]"></div>
                 
                 <button onclick="saveImage()" class="px-5 py-3 neo-button text-blue-600 min-w-max uppercase tracking-wider"><i class="fa-solid fa-save"></i> Salvar Laudo</button>
             </div>
 
-            <!-- Canvas Container -->
-            <div id="canvas-wrapper" class="flex-1 neo-screen relative flex justify-center items-center">
+            <div id="canvas-wrapper" class="flex-1 neo-screen relative flex justify-center items-center overflow-hidden">
                 <canvas id="fabric-canvas"></canvas>
-                <!-- Controles de Zoom da Radiografia -->
                 <div class="absolute bottom-4 right-4 flex flex-col gap-3 z-40">
-                    <button onclick="zoomCanvas(1.2)" class="w-12 h-12 neo-button flex items-center justify-center text-xl hover:text-blue-600">+</button>
-                    <button onclick="zoomCanvas(0.8)" class="w-12 h-12 neo-button flex items-center justify-center text-xl hover:text-blue-600">-</button>
+                    <button onclick="zoomCanvas(1.2)" class="w-12 h-12 neo-button flex items-center justify-center text-xl">+</button>
+                    <button onclick="zoomCanvas(0.8)" class="w-12 h-12 neo-button flex items-center justify-center text-xl">-</button>
                 </div>
             </div>
-
         </div>
 
-        <!-- ============================================== -->
-        <!-- ABA ESTUDO (Neumórfica com Lightbox)           -->
-        <!-- ============================================== -->
+        <!-- ABA ESTUDO -->
         <div id="aba-estudo" class="hidden h-full flex-col">
             <h2 class="text-xl font-extrabold mb-4 text-center text-gray-500 uppercase tracking-widest mt-2">Esquemas de Referência</h2>
-            <div id="estudo-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-2 pb-10">
-                <!-- Imagens injetadas via JS -->
-            </div>
+            <div id="estudo-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-2 pb-10"></div>
         </div>
 
-        <!-- ============================================== -->
-        <!-- ABA RELATÓRIO                                  -->
-        <!-- ============================================== -->
-        <div id="aba-relatorio" class="hidden h-full flex flex-col gap-4">
+        <!-- ABA RELATÓRIO -->
+        <div id="aba-relatorio" class="hidden h-full flex-col gap-4">
             <h2 class="text-xl font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Salvas</h2>
-            
             <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
-                <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda. Faça seus desenhos e clique em "Salvar Laudo".</p>
+                <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>
             </div>
-            
             <div class="neo-panel p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button onclick="gerarPDF(false)" class="w-full py-4 neo-button text-red-500 flex items-center justify-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar Arquivo PDF</button>
-                <button onclick="gerarPDF(true)" class="w-full py-4 neo-button text-green-500 flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp"></i> Compartilhar (Whats/Email)</button>
+                <button onclick="gerarPDF(true)" class="w-full py-4 neo-button text-green-500 flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp"></i> Compartilhar PDF</button>
             </div>
         </div>
-
     </main>
 
-    <!-- ============================================== -->
-    <!-- OVERLAY MODAL (Arrastar, Redimensionar, Zoom/Pan) -->
-    <!-- ============================================== -->
+    <!-- OVERLAY MODAL -->
     <div id="overlay-schema" class="hidden absolute top-48 left-10 neo-panel z-50 flex flex-col w-64 h-64 max-w-[90vw] bg-[#e0e5ec]">
-        <!-- Cabeçalho (Para arrastar o modal e botões de zoom) -->
         <div id="overlay-header" class="px-3 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
             <span class="font-bold text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
             <div class="flex items-center gap-2 pointer-events-auto">
@@ -191,19 +177,15 @@
                 <button onclick="fecharOverlay()" class="neo-button w-6 h-6 flex items-center justify-center text-xs text-red-500 ml-2">X</button>
             </div>
         </div>
-        <!-- Corpo (onde fica a imagem, suporta pan e zoom) -->
         <div id="overlay-body" class="flex-1 neo-inset m-2 overflow-hidden relative cursor-grab flex items-center justify-center">
             <img id="overlay-img" src="" class="max-w-none max-h-none origin-center pointer-events-none" style="transform: translate(0px, 0px) scale(1);" />
         </div>
-        <!-- Indicador de Redimensionamento -->
         <div class="absolute bottom-0 right-0 p-1 pointer-events-none text-gray-400 text-[10px]">
             <i class="fa-solid fa-arrow-up-right-dots fa-flip-horizontal"></i>
         </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- LIGHTBOX (Tela cheia para aba Estudo)          -->
-    <!-- ============================================== -->
+    <!-- LIGHTBOX -->
     <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-center items-center p-4 transition-opacity">
         <button onclick="fecharLightbox()" class="absolute top-6 right-6 neo-button w-12 h-12 text-2xl text-red-500 font-bold">&times;</button>
         <h3 id="lightbox-title" class="text-gray-600 text-2xl mb-6 font-extrabold uppercase tracking-widest drop-shadow-sm"></h3>
@@ -212,11 +194,7 @@
         </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- LÓGICA JAVASCRIPT                              -->
-    <!-- ============================================== -->
     <script>
-        // Imagens do seu PDF
         const esquemasAnatomicos =[
             { id: '1', nome: 'Incisivos Sup', url: 'incisivos_sup.jpg' },
             { id: '2', nome: 'Caninos Sup', url: 'caninos_sup.jpg' },
@@ -229,43 +207,38 @@
         ];
 
         let canvas;
-        let isPanning = true; 
+        let isPanning = false; 
         let imagensSalvas =[];
 
-        // Controle da imagem interna do Overlay
-        let olZoom = 1;
-        let olPosX = 0, olPosY = 0;
-        let isOlDragging = false;
-        let olStartX, olStartY;
+        // Variáveis Overlay
+        let olZoom = 1, olPosX = 0, olPosY = 0, isOlDragging = false, olStartX, olStartY;
 
         window.onload = () => {
             initCanvas();
             carregarEstudos();
             configurarDraggableModal();
             configurarPanZoomOverlayImage();
-            setTool('pan'); // Começa no modo mover
+            setTool('edit'); // Agora começa no modo selecionar para evitar arrastar sem querer
         };
 
-        // NAVEGAÇÃO
         function mudarAba(aba) {['anatomia', 'estudo', 'relatorio'].forEach(a => {
                 document.getElementById(`aba-${a}`).classList.add('hidden');
                 document.getElementById(`aba-${a}`).classList.remove('block', 'flex');
-                
-                let btn = document.getElementById(`tab-btn-${a}`);
-                btn.className = "flex-1 py-3 text-sm sm:text-base neo-button transition"; // Reseta estado
+                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-3 text-sm sm:text-base neo-button transition";
             });
 
             const current = document.getElementById(`aba-${aba}`);
             current.classList.remove('hidden');
-            current.classList.add(aba === 'anatomia' ? 'block' : 'flex');
-            
-            let btnAtivo = document.getElementById(`tab-btn-${aba}`);
-            btnAtivo.className = "flex-1 py-3 text-sm sm:text-base neo-pressed transition"; // Estado afundado
+            current.classList.add(aba === 'anatomia' ? 'flex' : 'flex');
+            document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-3 text-sm sm:text-base neo-pressed transition";
 
             if(aba === 'anatomia' && canvas) canvas.calcOffset();
         }
 
-        // CANVAS SETUP
+        // Função segura para pegar coordenadas no iPhone/Touch
+        function getClientX(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX; }
+        function getClientY(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY; }
+
         function initCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas = new fabric.Canvas('fabric-canvas', {
@@ -278,21 +251,20 @@
             canvas.freeDrawingBrush.color = "#FF3333";
             canvas.freeDrawingBrush.width = 3;
 
-            // Pan da Tela
             canvas.on('mouse:down', function(opt) {
-                var evt = opt.e;
+                var e = opt.e;
                 if (isPanning) {
                     this.isDragging = true;
-                    this.selection = false;
-                    this.lastPosX = evt.clientX || (evt.touches ? evt.touches[0].clientX : 0);
-                    this.lastPosY = evt.clientY || (evt.touches ? evt.touches[0].clientY : 0);
+                    this.lastPosX = getClientX(e);
+                    this.lastPosY = getClientY(e);
                 }
             });
+            
             canvas.on('mouse:move', function(opt) {
-                if (this.isDragging) {
+                if (this.isDragging && isPanning) {
                     var e = opt.e;
-                    var clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-                    var clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    var clientX = getClientX(e);
+                    var clientY = getClientY(e);
                     var vpt = this.viewportTransform;
                     vpt[4] += clientX - this.lastPosX;
                     vpt[5] += clientY - this.lastPosY;
@@ -301,12 +273,11 @@
                     this.lastPosY = clientY;
                 }
             });
+            
             canvas.on('mouse:up', function() {
                 this.isDragging = false;
-                this.selection = true;
             });
 
-            // Zoom da tela (scroll)
             canvas.on('mouse:wheel', function(opt) {
                 var delta = opt.e.deltaY;
                 var zoom = canvas.getZoom();
@@ -324,50 +295,57 @@
             });
         }
 
-        // UPLOAD
         document.getElementById('image-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
-                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.95;
+                    // Centralizar e ajustar perfeitamente ao tamanho da tela
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
                     img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
+                    
+                    // Reseta o zoom e a posição da tela para não sumir a imagem
+                    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
                     canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                 });
             };
             reader.readAsDataURL(file);
         });
 
-        // FERRAMENTAS
+        // Controle de Ferramentas Corrigido
         function resetToolsUI() {
-            const btns =['pan', 'draw'];
-            btns.forEach(b => {
+            ['pan', 'draw', 'edit'].forEach(b => {
                 let elem = document.getElementById(`btn-${b}`);
-                elem.classList.remove('neo-pressed');
-                elem.classList.add('neo-button');
+                if(elem) { elem.classList.remove('neo-pressed'); elem.classList.add('neo-button'); }
             });
-            canvas.isDrawingMode = false;
-            canvas.forEachObject(o => o.selectable = true);
-            isPanning = false;
         }
 
         function setTool(tool) {
             resetToolsUI();
-            let btn = document.getElementById(`btn-${tool}`);
-            btn.classList.remove('neo-button');
-            btn.classList.add('neo-pressed');
+            document.getElementById(`btn-${tool}`).classList.replace('neo-button', 'neo-pressed');
 
             if(tool === 'pan') {
                 isPanning = true;
+                canvas.isDrawingMode = false;
                 canvas.forEachObject(o => o.selectable = false);
+                canvas.discardActiveObject();
+                canvas.requestRenderAll();
+            } else if (tool === 'edit') {
+                isPanning = false;
+                canvas.isDrawingMode = false;
+                canvas.forEachObject(o => o.selectable = true);
             } else if (tool === 'draw') {
+                isPanning = false;
                 canvas.isDrawingMode = true;
+                canvas.forEachObject(o => o.selectable = false);
+                canvas.discardActiveObject();
+                canvas.requestRenderAll();
             }
         }
 
         function addText() {
-            setTool('pan');
+            setTool('edit'); // Muda direto pro modo seta para editar a palavra sem mover a tela
             const text = new fabric.IText('Clique p/ Editar', {
                 left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center',
                 fontFamily: 'Arial', fill: '#10B981', fontSize: 24, editable: true, fontWeight: 'bold'
@@ -377,7 +355,7 @@
         }
 
         function addLine() {
-            setTool('pan');
+            setTool('edit');
             const line = new fabric.Line([50, 50, 200, 50], {
                 stroke: '#F59E0B', strokeWidth: 4, selectable: true, hasControls: true, hasBorders: true,
                 left: canvas.width / 2 - 75, top: canvas.height / 2
@@ -386,7 +364,7 @@
         }
 
         function addPolygon() {
-            setTool('pan');
+            setTool('edit');
             const triangle = new fabric.Triangle({
                 width: 100, height: 100, fill: 'transparent', stroke: '#14B8A6', strokeWidth: 4,
                 left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center'
@@ -395,7 +373,7 @@
         }
 
         function addArrow() {
-            setTool('pan');
+            setTool('edit');
             const line = new fabric.Line([0, 0, 100, 0], { stroke: '#A855F7', strokeWidth: 4 });
             const head = new fabric.Triangle({ width: 18, height: 18, fill: '#A855F7', left: 100, top: 0, originX: 'center', originY: 'center', angle: 90 });
             const arrow = new fabric.Group([line, head], { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' });
@@ -408,7 +386,7 @@
         }
 
         function clearCanvas() {
-            if(confirm('Apagar apenas os desenhos? (A foto continuará)')) {
+            if(confirm('Apagar apenas as anotações? (O raio-x continuará na tela)')) {
                 canvas.getObjects().forEach(o => canvas.remove(o));
             }
         }
@@ -420,7 +398,6 @@
             canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
         }
 
-        // ABA ESTUDO - CARREGAR
         function carregarEstudos() {
             const grid = document.getElementById('estudo-grid');
             const select = document.getElementById('overlay-selector');
@@ -451,15 +428,11 @@
             document.getElementById('lightbox-img').src = '';
         }
 
-        // OVERLAY MODAL (O esquema por cima da radiografia)
         function mostrarOverlay(url) {
             const overlay = document.getElementById('overlay-schema');
             if (!url) { overlay.classList.add('hidden'); return; }
-            
-            // Resetar pan/zoom da imagem
             olZoom = 1; olPosX = 0; olPosY = 0;
             atualizarOverlayTransform();
-            
             document.getElementById('overlay-img').src = url;
             overlay.classList.remove('hidden');
         }
@@ -469,7 +442,6 @@
             document.getElementById('overlay-selector').value = "";
         }
 
-        // OVERLAY - ARRASTAR A JANELA
         function configurarDraggableModal() {
             const overlay = document.getElementById('overlay-schema');
             const header = document.getElementById('overlay-header');
@@ -479,7 +451,6 @@
             header.ontouchstart = dragMouseDown;
 
             function dragMouseDown(e) {
-                // Ignorar se clicou nos botoes de fechar/zoom
                 if(e.target.tagName.toLowerCase() === 'button') return; 
                 e = e || window.event;
                 let touch = e.touches ? e.touches[0] : e;
@@ -505,10 +476,8 @@
             }
         }
 
-        // OVERLAY - ZOOM E PAN NA IMAGEM INTERNA
         function atualizarOverlayTransform() {
-            const img = document.getElementById('overlay-img');
-            img.style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`;
+            document.getElementById('overlay-img').style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`;
         }
 
         function zoomOverlayImg(fator) {
@@ -521,14 +490,11 @@
         function configurarPanZoomOverlayImage() {
             const olBody = document.getElementById('overlay-body');
             
-            // Mouse Wheel para Zoom
             olBody.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                if(e.deltaY < 0) zoomOverlayImg(1.1);
-                else zoomOverlayImg(0.9);
+                if(e.deltaY < 0) zoomOverlayImg(1.1); else zoomOverlayImg(0.9);
             });
 
-            // Mouse & Touch Pan (Arrastar Imagem)
             const downEvent = (e) => {
                 isOlDragging = true;
                 olBody.style.cursor = 'grabbing';
@@ -547,10 +513,7 @@
                 atualizarOverlayTransform();
             };
 
-            const upEvent = () => {
-                isOlDragging = false;
-                olBody.style.cursor = 'grab';
-            };
+            const upEvent = () => { isOlDragging = false; olBody.style.cursor = 'grab'; };
 
             olBody.addEventListener('mousedown', downEvent);
             window.addEventListener('mousemove', moveEvent);
@@ -561,7 +524,6 @@
             window.addEventListener('touchend', upEvent);
         }
 
-        // SALVAR LAUDO E GERAR PDF
         function saveImage() {
             canvas.discardActiveObject();
             canvas.renderAll();
@@ -571,14 +533,14 @@
             canvas.setZoom(1);
             canvas.viewportTransform =[1,0,0,1,0,0];
             
-            const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 1.0 }); // jpeg = mais leve e sem borda preta
+            const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 1.0 });
             
             canvas.setViewportTransform(currentVpt);
             canvas.setZoom(currentZoom);
 
             imagensSalvas.push(dataUrl);
             atualizarGaleriaSalvas();
-            alert("Sucesso! Imagem inserida no Relatório.");
+            alert("Sucesso! Anotação inserida no Laudo.");
         }
 
         function atualizarGaleriaSalvas() {
