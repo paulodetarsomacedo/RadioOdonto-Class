@@ -11,24 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        :root {
-            --bg-color: #e0e5ec;
-            --shadow-light: #ffffff;
-            --shadow-dark: #a3b1c6;
-            --primary-color: #3b82f6;
-            --text-color: #4b5563;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            overflow-x: hidden; 
-            background-color: var(--bg-color); 
-            color: var(--text-color);
-            user-select: none; -webkit-user-select: none;
-        }
-
-        .no-scrollbar { scrollbar-width: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        :root { --bg-color: #e0e5ec; --shadow-light: #ffffff; --shadow-dark: #a3b1c6; --primary-color: #3b82f6; --text-color: #4b5563; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; background-color: var(--bg-color); color: var(--text-color); user-select: none; -webkit-user-select: none; }
+        .no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
 
         /* Neumorfismo */
         .neo-panel { background: var(--bg-color); box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light); border-radius: 1.5rem; }
@@ -43,12 +28,10 @@
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
 
         #canvas-wrapper, .canvas-container { touch-action: none !important; margin: 0 auto; }
-        #overlay-body, #modal-resize-handle { touch-action: none !important; }
+        #overlay-body, #modal-resize-handle, #lightbox-body { touch-action: none !important; }
 
         @keyframes loadingBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
         .animate-loading-bar { animation: loadingBar 1.5s infinite linear; }
-        
-        /* Checkbox Customizado */
         .neo-checkbox { appearance: none; width: 20px; height: 20px; border-radius: 0.25rem; background: var(--bg-color); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); display: inline-block; position: relative; cursor: pointer; }
         .neo-checkbox:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: var(--primary-color); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
     </style>
@@ -77,10 +60,11 @@
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto UNIFSA
         </div>
         <nav class="flex justify-around gap-2 px-2 pb-2">
-            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 neo-pressed text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-pen-ruler text-sm"></i>Anatomia</button>
-            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm"></i>Estudo</button>
+            <!-- Nova ordem solicitada: Anatomia / Laudo / Relatório / Estudo -->
+            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 neo-pressed text-[11px] sm:text-xs flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm"></i>Anatomia</button>
             <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm"></i>Laudo</button>
             <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-images text-sm"></i>Relatório</button>
+            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm"></i>Estudo</button>
         </nav>
     </header>
 
@@ -88,7 +72,6 @@
         
         <!-- ================= ABA ANATOMIA ================= -->
         <div id="aba-anatomia" class="flex-1 flex flex-col gap-2 h-full">
-            
             <div class="neo-panel p-2 flex gap-2 flex-wrap items-center justify-between z-10">
                 <label class="neo-button px-3 py-2 cursor-pointer text-xs flex items-center gap-2 text-blue-600 w-full sm:w-auto justify-center font-bold">
                     <i class="fa-solid fa-camera"></i> Subir Imagem
@@ -102,7 +85,7 @@
                 </div>
             </div>
 
-            <!-- BARRA DE FERRAMENTAS COMPACTA -->
+            <!-- BARRA DE FERRAMENTAS -->
             <div class="neo-panel p-2 z-10 flex flex-col gap-2">
                 <div class="grid grid-cols-4 sm:grid-cols-8 gap-1 text-[9px] sm:text-[10px] text-center font-bold">
                     <button onclick="setTool('edit')" id="btn-edit" class="neo-pressed p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-pointer text-base"></i> Selecionar</button>
@@ -127,55 +110,52 @@
                 </div>
             </div>
 
-            <!-- CANVAS COM ÁREA MAIOR -->
+            <!-- CANVAS -->
             <div id="canvas-wrapper" class="flex-1 min-h-[45vh] neo-screen relative flex justify-center items-center overflow-hidden">
                 <canvas id="fabric-canvas"></canvas>
             </div>
             
-            <button onclick="saveImage()" class="w-full py-2 neo-button text-blue-600 uppercase tracking-wider text-xs font-bold mt-1"><i class="fa-solid fa-save"></i> Salvar na Aba Relatório</button>
+            <button onclick="saveImage()" class="w-full py-2 neo-button text-blue-600 uppercase tracking-wider text-xs font-bold mt-1"><i class="fa-solid fa-save"></i> Enviar p/ Relatório Base</button>
         </div>
 
-        <!-- ================= ABA ESTUDO ================= -->
-        <div id="aba-estudo" class="hidden h-full flex-col">
-            <h2 class="text-lg font-extrabold mb-4 text-center text-gray-500 uppercase tracking-widest mt-2">Esquemas de Referência</h2>
-            <div id="estudo-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-2 pb-10"></div>
-        </div>
-
-        <!-- ================= ABA LAUDO (NOVA) ================= -->
+        <!-- ================= ABA LAUDO (GERADOR PDF) ================= -->
         <div id="aba-laudo" class="hidden h-full flex-col gap-2">
-            <!-- Negatoscópio do Laudo (40% da tela) -->
+            <!-- Negatoscópio do Laudo -->
             <div class="h-[35vh] w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
-                <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Sem+Imagem+Carregada">
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] px-2 py-1 rounded">Visualização</div>
+                <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Desenhe+na+aba+Anatomia">
+                <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] px-2 py-1 rounded">Imagem do Laudo</div>
             </div>
 
-            <!-- Editor e Controles -->
-            <div class="flex-1 flex flex-col gap-2 relative">
-                <select id="laudo-tipo-rx" onchange="atualizarCabecalhoLaudo()" class="neo-inset p-2 rounded-lg text-sm font-bold text-blue-600 bg-transparent w-full">
+            <!-- Meta Dados do Laudo -->
+            <div class="neo-panel p-3 flex flex-col gap-2">
+                <input type="text" id="laudo-paciente" placeholder="Nome do Paciente..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
+                <select id="laudo-tipo-rx" class="neo-inset p-2 rounded-lg text-sm font-bold text-blue-600 bg-transparent w-full">
                     <option value="">Selecione o tipo de radiografia...</option>
                     <option value="Periapical">Radiografia Periapical</option>
-                    <option value="Interproximal (Bite-Wing)">Radiografia Interproximal (Bite-Wing)</option>
+                    <option value="Interproximal">Radiografia Interproximal (Bite-Wing)</option>
                     <option value="Oclusal">Radiografia Oclusal</option>
                     <option value="Panorâmica">Radiografia Panorâmica</option>
                     <option value="Extrabucal">Radiografia Extrabucal</option>
                 </select>
+            </div>
+
+            <!-- Editor e Achados -->
+            <div class="flex-1 flex flex-col gap-2 relative">
+                <div class="text-xs font-bold text-gray-500 px-2 mt-1"><i class="fa-solid fa-list-check"></i> Achados Radiográficos (Editor):</div>
+                <textarea id="laudo-editor" class="flex-1 neo-inset p-3 rounded-xl text-sm text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Digite os achados ou use o construtor abaixo..."></textarea>
                 
-                <textarea id="laudo-editor" class="flex-1 neo-inset p-3 rounded-xl text-sm text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Comece a digitar o laudo..."></textarea>
-                
-                <div class="flex gap-2">
-                    <button onclick="abrirModalAchados()" class="flex-1 neo-button py-2 text-blue-600 font-extrabold text-sm"><i class="fa-solid fa-plus-circle"></i> Inserir Achado</button>
-                </div>
+                <button onclick="abrirModalAchados()" class="w-full neo-button py-2 text-blue-600 font-extrabold text-sm"><i class="fa-solid fa-plus-circle"></i> Inserir Achado Rápido</button>
                 
                 <div class="neo-panel p-2 flex flex-col gap-2 mt-1">
-                    <input type="text" id="laudo-nome-aluno" placeholder="Nome do Acadêmico(a)..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
-                    <button onclick="gerarPDFLaudo()" class="w-full neo-button py-2 text-red-500 font-extrabold text-sm"><i class="fa-solid fa-file-pdf"></i> Baixar Laudo PDF</button>
+                    <input type="text" id="laudo-nome-aluno" placeholder="Assinatura Acadêmico(a)..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
+                    <button onclick="gerarPDFLaudo()" class="w-full neo-pressed py-3 text-red-500 font-extrabold text-sm"><i class="fa-solid fa-file-pdf"></i> Baixar Laudo PDF</button>
                 </div>
             </div>
         </div>
 
         <!-- ================= ABA RELATÓRIO ================= -->
         <div id="aba-relatorio" class="hidden h-full flex-col gap-3">
-            <h2 class="text-lg font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens para Relatório Base</h2>
+            <h2 class="text-lg font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Base Salvas</h2>
             <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
                 <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>
             </div>
@@ -183,16 +163,31 @@
                 <button onclick="gerarPDFRelatorio()" class="w-full py-3 neo-button text-red-500 text-sm font-bold"><i class="fa-solid fa-file-pdf"></i> Baixar Imagens (PDF)</button>
             </div>
         </div>
+
+        <!-- ================= ABA ESTUDO (Avançada) ================= -->
+        <div id="aba-estudo" class="hidden h-full flex-col gap-2">
+            <h2 class="text-lg font-extrabold mb-1 text-center text-gray-500 uppercase tracking-widest mt-2">Reparos Anatômicos</h2>
+            
+            <!-- Filtros Neumórficos -->
+            <div class="flex justify-center gap-2 mb-2">
+                <button onclick="filtrarEstudos('todos')" id="btn-filtro-todos" class="neo-pressed px-4 py-1 text-xs font-bold text-blue-600">Todos</button>
+                <button onclick="filtrarEstudos('maxila')" id="btn-filtro-maxila" class="neo-button px-4 py-1 text-xs font-bold text-gray-600">Maxila</button>
+                <button onclick="filtrarEstudos('mandibula')" id="btn-filtro-mandibula" class="neo-button px-4 py-1 text-xs font-bold text-gray-600">Mandíbula</button>
+            </div>
+
+            <div id="estudo-grid" class="neo-inset flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 p-4 content-start">
+                <!-- Imagens injetadas via JS -->
+            </div>
+        </div>
     </main>
 
-    <!-- ================= MODAL INSERIR ACHADO (LAUDO) ================= -->
+    <!-- ================= MODAL INSERIR ACHADO ================= -->
     <div id="modal-achados" class="hidden fixed inset-0 z-[105] bg-[#e0e5ec] bg-opacity-95 flex flex-col justify-end p-2 transition-opacity">
         <div class="neo-panel w-full max-h-[85vh] rounded-t-3xl rounded-b-xl flex flex-col overflow-hidden border border-white">
             <div class="p-4 bg-gray-100 border-b flex justify-between items-center rounded-t-3xl">
                 <h3 class="font-extrabold text-gray-600 text-base uppercase tracking-wider"><i class="fa-solid fa-stethoscope text-blue-500"></i> Construtor de Achados</h3>
                 <button onclick="fecharModalAchados()" class="text-red-500 text-2xl font-bold px-2">&times;</button>
             </div>
-            
             <div class="p-4 flex-1 overflow-y-auto flex flex-col gap-4">
                 <div>
                     <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">Categoria do Achado</label>
@@ -206,20 +201,17 @@
                         <option value="anomalia">6. Anomalias Dentárias</option>
                     </select>
                 </div>
-
                 <div id="achado-campos" class="flex flex-col gap-3 min-h-[200px]">
-                    <!-- Campos dinâmicos entram aqui -->
-                    <p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima para configurar o achado radiográfico.</p>
+                    <p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>
                 </div>
             </div>
-
             <div class="p-3 bg-gray-50 border-t rounded-b-xl">
                 <button onclick="inserirTextoAchado()" class="w-full neo-pressed py-3 text-blue-600 font-extrabold text-sm"><i class="fa-solid fa-check"></i> Adicionar ao Laudo</button>
             </div>
         </div>
     </div>
 
-    <!-- ================= OVERLAY MODAL ================= -->
+    <!-- ================= OVERLAY MODAL (ARRASTAR) ================= -->
     <div id="overlay-schema" class="hidden absolute top-48 left-6 neo-panel z-50 flex flex-col bg-[#e0e5ec] overflow-hidden" style="width: 200px; height: 200px; min-width: 120px; min-height: 120px; max-width: 95vw; max-height: 80vh;">
         <div id="overlay-header" class="px-2 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
             <span class="font-bold text-[10px] text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
@@ -233,87 +225,91 @@
         </div>
     </div>
 
-    <!-- ================= LIGHTBOX ================= -->
-    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-center items-center p-4 transition-opacity">
-        <button onclick="fecharLightbox()" class="absolute top-6 right-6 neo-button w-12 h-12 text-2xl text-red-500 font-bold">&times;</button>
-        <h3 id="lightbox-title" class="text-gray-600 text-xl mb-6 font-extrabold uppercase tracking-widest drop-shadow-sm text-center"></h3>
-        <div class="neo-panel p-4 max-w-full max-h-[75vh]">
-            <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] object-contain rounded-xl mix-blend-multiply">
+    <!-- ================= LIGHTBOX (ESTUDO AVANÇADO) ================= -->
+    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-start items-center p-2 pt-10 transition-opacity">
+        <button onclick="fecharLightbox()" class="absolute top-4 right-4 neo-button w-10 h-10 text-xl text-red-500 font-bold z-10">&times;</button>
+        <h3 id="lightbox-title" class="text-gray-600 text-lg mb-4 font-extrabold uppercase tracking-widest drop-shadow-sm text-center"></h3>
+        
+        <!-- Área da imagem com Zoom e Pan -->
+        <div id="lightbox-body" class="neo-panel p-2 w-full max-w-full h-[50vh] relative overflow-hidden flex items-center justify-center cursor-grab bg-white rounded-xl">
+            <img id="lightbox-img" src="" class="max-w-none max-h-none origin-center pointer-events-none mix-blend-multiply" style="transform: translate(0px, 0px) scale(1);">
+            <div class="absolute bottom-1 right-1 text-[9px] text-gray-400 font-bold bg-white px-1 rounded shadow opacity-70">Use 2 dedos (Pinça) para Zoom</div>
+        </div>
+
+        <!-- Bloco de Notas Pessoais -->
+        <div class="w-full mt-4 flex flex-col gap-2 flex-1">
+            <label class="text-xs font-bold text-gray-500 uppercase px-2"><i class="fa-solid fa-book-open text-blue-500"></i> Minhas Anotações de Estudo</label>
+            <textarea id="lightbox-notes" onkeyup="salvarAnotacao()" class="flex-1 neo-inset p-3 rounded-xl text-sm text-gray-700 outline-none resize-none" placeholder="Digite seus resumos, macetes anatômicos ou observações aqui. Ficará salvo automaticamente no seu celular para estudos futuros!"></textarea>
         </div>
     </div>
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
         const esquemasAnatomicos =[
-            { id: '1', nome: 'Incisivos Sup', url: 'incisivos_sup.jpg' },
-            { id: '2', nome: 'Caninos Sup', url: 'caninos_sup.jpg' },
-            { id: '3', nome: 'Pré-molares Sup', url: 'pre_molares_sup.jpg' },
-            { id: '4', nome: 'Molares Sup', url: 'molares_sup.jpg' },
-            { id: '5', nome: 'Incisivos Inf', url: 'incisivos_inf.jpg' },
-            { id: '6', nome: 'Caninos Inf', url: 'caninos_inf.jpg' },
-            { id: '7', nome: 'Pré-molares Inf', url: 'pre_molares_inf.jpg' },
-            { id: '8', nome: 'Molares Inf', url: 'molares_inf.jpg' }
+            { id: '1', nome: 'Incisivos Sup', url: 'incisivos_sup.jpg', cat: 'maxila' },
+            { id: '2', nome: 'Caninos Sup', url: 'caninos_sup.jpg', cat: 'maxila' },
+            { id: '3', nome: 'Pré-molares Sup', url: 'pre_molares_sup.jpg', cat: 'maxila' },
+            { id: '4', nome: 'Molares Sup', url: 'molares_sup.jpg', cat: 'maxila' },
+            { id: '5', nome: 'Incisivos Inf', url: 'incisivos_inf.jpg', cat: 'mandibula' },
+            { id: '6', nome: 'Caninos Inf', url: 'caninos_inf.jpg', cat: 'mandibula' },
+            { id: '7', nome: 'Pré-molares Inf', url: 'pre_molares_inf.jpg', cat: 'mandibula' },
+            { id: '8', nome: 'Molares Inf', url: 'molares_inf.jpg', cat: 'mandibula' }
         ];
 
         let canvas;
         let isPanning = false; 
         let imagensSalvas =[];
         let olZoom = 1, olPosX = 0, olPosY = 0;
-        let imgLaudoSource = null; // Guarda a imagem atual p/ o Laudo
+        let imgLaudoSource = null; 
+
+        // Lightbox Zoom Vars
+        let lbZoom = 1, lbPosX = 0, lbPosY = 0;
+        let activeEstudoId = null;
 
         window.onload = () => {
             setTimeout(() => {
                 const loader = document.getElementById('loading-screen');
-                loader.classList.add('opacity-0');
-                setTimeout(() => loader.remove(), 1000);
-            }, 2500);
+                loader.classList.add('opacity-0'); setTimeout(() => loader.remove(), 1000);
+            }, 2000);
 
             initCanvas();
-            carregarEstudos();
-            configurarDraggableModal();
-            configurarResizeModal(); 
-            configurarPanZoomOverlayImage(); 
-            configurarZoomPinçaCanvas(); 
+            renderizarEstudos(esquemasAnatomicos);
+            configurarDraggableModal(); configurarResizeModal(); 
+            configurarPanZoomOverlay(); configurarZoomPinçaCanvas(); 
+            configurarPanZoomLightbox();
             setTool('edit');
-            inicializarEditorLaudo();
 
             document.getElementById('color-picker').addEventListener('input', function(e) {
-                const cor = e.target.value;
-                canvas.freeDrawingBrush.color = cor;
+                const cor = e.target.value; canvas.freeDrawingBrush.color = cor;
                 const act = canvas.getActiveObject();
                 if(act) {
                     if(act.type === 'text') act.set('fill', cor);
                     else if(['path','line','triangle'].includes(act.type)) act.set('stroke', cor);
-                    else if(act.type === 'group') {
-                        act.getObjects().forEach(o => { o.set('stroke', cor); if(o.type !== 'line') o.set('fill', cor); });
-                    }
+                    else if(act.type === 'group') { act.getObjects().forEach(o => { o.set('stroke', cor); if(o.type !== 'line') o.set('fill', cor); }); }
                     canvas.renderAll();
                 }
             });
         };
 
-        function mudarAba(aba) {['anatomia', 'estudo', 'laudo', 'relatorio'].forEach(a => {
-                document.getElementById(`aba-${a}`).classList.add('hidden');
-                document.getElementById(`aba-${a}`).classList.remove('flex');
-                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 text-[11px] sm:text-xs flex flex-col items-center gap-1 neo-button transition";
+        function mudarAba(aba) {['anatomia', 'laudo', 'relatorio', 'estudo'].forEach(a => {
+                document.getElementById(`aba-${a}`).classList.add('hidden'); document.getElementById(`aba-${a}`).classList.remove('flex');
+                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 text-[11px] sm:text-xs flex flex-col items-center gap-1 neo-button transition text-gray-600";
             });
             const current = document.getElementById(`aba-${aba}`);
             current.classList.remove('hidden'); current.classList.add('flex');
             document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-2 text-[11px] sm:text-xs flex flex-col items-center gap-1 neo-pressed transition text-blue-500";
             
             if(aba === 'anatomia' && canvas) canvas.calcOffset();
-            if(aba === 'laudo') syncLaudoImage(); // Puxa a imagem desenhada p o laudo
+            if(aba === 'laudo') syncLaudoImage(); 
         }
 
-        // ================= CANAVAS & FERRAMENTAS =================
         function getClientX(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX; }
         function getClientY(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY; }
 
         function initCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas = new fabric.Canvas('fabric-canvas', { width: wrapper.clientWidth, height: wrapper.clientHeight, isDrawingMode: false, selection: true });
-            canvas.freeDrawingBrush.color = document.getElementById('color-picker').value;
-            canvas.freeDrawingBrush.width = 3;
+            canvas.freeDrawingBrush.color = document.getElementById('color-picker').value; canvas.freeDrawingBrush.width = 3;
 
             canvas.on('mouse:down', function(opt) { if (isPanning) { this.isDragging = true; this.lastPosX = getClientX(opt.e); this.lastPosY = getClientY(opt.e); } });
             canvas.on('mouse:move', function(opt) { if (this.isDragging && isPanning) { var vpt = this.viewportTransform; vpt[4] += getClientX(opt.e) - this.lastPosX; vpt[5] += getClientY(opt.e) - this.lastPosY; this.requestRenderAll(); this.lastPosX = getClientX(opt.e); this.lastPosY = getClientY(opt.e); } });
@@ -323,25 +319,21 @@
         }
 
         function configurarZoomPinçaCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            let distInicial = null, zoomInicial = 1;
+            const wrapper = document.getElementById('canvas-wrapper'); let distInicial = null, zoomInicial = 1;
             wrapper.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { e.preventDefault(); distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = canvas.getZoom(); } }, {passive: false});
             wrapper.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && distInicial) { e.preventDefault(); let distAtual = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); let novoZoom = Math.min(Math.max(zoomInicial * (distAtual / distInicial), 0.1), 10); canvas.zoomToPoint(new fabric.Point((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2), novoZoom); } }, {passive: false});
         }
 
         document.getElementById('image-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
+            const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
                     const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
                     img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
-                    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+                    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]); canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                     
-                    // Salva a imagem original p o laudo e rola a tela
-                    imgLaudoSource = f.target.result;
-                    syncLaudoImage();
+                    imgLaudoSource = f.target.result; syncLaudoImage();
+                    // Scroll automático para melhorar área visual
                     document.getElementById('canvas-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             };
@@ -352,8 +344,7 @@
                 document.getElementById(`btn-${b}`).classList.replace('neo-pressed', 'neo-button');
                 document.getElementById(`btn-${b}`).classList.remove('text-gray-700', 'text-blue-500', 'text-red-500');
             });
-            const btn = document.getElementById(`btn-${tool}`);
-            btn.classList.replace('neo-button', 'neo-pressed');
+            const btn = document.getElementById(`btn-${tool}`); btn.classList.replace('neo-button', 'neo-pressed');
 
             if(tool === 'pan') { btn.classList.add('text-blue-500'); isPanning = true; canvas.isDrawingMode = false; canvas.forEachObject(o => o.selectable = false); canvas.discardActiveObject(); canvas.requestRenderAll(); } 
             else if (tool === 'edit') { btn.classList.add('text-gray-700'); isPanning = false; canvas.isDrawingMode = false; canvas.forEachObject(o => o.selectable = true); } 
@@ -378,48 +369,70 @@
             alert("Sucesso! Imagem salva no Relatório Base.");
         }
 
-        // ================= ABA ESTUDO / OVERLAYS =================
-        function carregarEstudos() { const grid = document.getElementById('estudo-grid'); const select = document.getElementById('overlay-selector'); esquemasAnatomicos.forEach(esq => { grid.innerHTML += `<div onclick="abrirLightbox('${esq.url}', '${esq.nome}')" class="neo-panel p-3 flex flex-col items-center cursor-pointer transition transform hover:scale-105"><div class="neo-inset w-full h-32 flex items-center justify-center p-2 mb-3"><img src="${esq.url}" onerror="this.src='https://via.placeholder.com/300x200?text=${esq.nome}'" class="w-full h-full object-contain mix-blend-multiply"></div><h3 class="font-bold text-gray-600 text-xs tracking-wide uppercase">${esq.nome}</h3></div>`; select.innerHTML += `<option value="${esq.url}">${esq.nome}</option>`; }); }
-        function abrirLightbox(url, nome) { document.getElementById('lightbox-img').src = url; document.getElementById('lightbox-title').innerText = nome; document.getElementById('lightbox').classList.remove('hidden'); }
-        function fecharLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
+        // ================= ESTUDOS AVANÇADOS =================
+        function renderizarEstudos(lista) {
+            const grid = document.getElementById('estudo-grid'); grid.innerHTML = "";
+            const select = document.getElementById('overlay-selector'); 
+            if(select.options.length <= 1) { // Preenche select overlay só na primeira vez
+                esquemasAnatomicos.forEach(esq => { select.innerHTML += `<option value="${esq.url}">${esq.nome}</option>`; });
+            }
+            lista.forEach(esq => {
+                grid.innerHTML += `<div onclick="abrirLightbox('${esq.id}','${esq.url}', '${esq.nome}')" class="neo-panel p-2 flex flex-col items-center cursor-pointer transition transform hover:scale-105 bg-white"><div class="w-full h-24 flex items-center justify-center p-1 mb-2"><img src="${esq.url}" onerror="this.src='https://via.placeholder.com/300x200?text=${esq.nome}'" class="w-full h-full object-contain mix-blend-multiply"></div><h3 class="font-bold text-gray-500 text-[10px] tracking-wide uppercase text-center">${esq.nome}</h3></div>`;
+            });
+        }
 
+        function filtrarEstudos(cat) {['todos', 'maxila', 'mandibula'].forEach(c => {
+                let btn = document.getElementById(`btn-filtro-${c}`);
+                btn.classList.replace('neo-pressed', 'neo-button'); btn.classList.remove('text-blue-600'); btn.classList.add('text-gray-600');
+            });
+            let btnAtivo = document.getElementById(`btn-filtro-${cat}`);
+            btnAtivo.classList.replace('neo-button', 'neo-pressed'); btnAtivo.classList.replace('text-gray-600', 'text-blue-600');
+            
+            if(cat === 'todos') renderizarEstudos(esquemasAnatomicos);
+            else renderizarEstudos(esquemasAnatomicos.filter(e => e.cat === cat));
+        }
+
+        function abrirLightbox(id, url, nome) { 
+            activeEstudoId = id;
+            lbZoom = 1; lbPosX = 0; lbPosY = 0; atualizarLightboxTransform();
+            document.getElementById('lightbox-img').src = url; 
+            document.getElementById('lightbox-title').innerText = nome; 
+            
+            // Carrega anotações do localStorage
+            const notasSalvas = localStorage.getItem(`nota_estudo_${id}`) || "";
+            document.getElementById('lightbox-notes').value = notasSalvas;
+            
+            document.getElementById('lightbox').classList.remove('hidden'); 
+        }
+        function fecharLightbox() { document.getElementById('lightbox').classList.add('hidden'); activeEstudoId = null; }
+        function salvarAnotacao() { if(activeEstudoId) { localStorage.setItem(`nota_estudo_${activeEstudoId}`, document.getElementById('lightbox-notes').value); } }
+
+        function atualizarLightboxTransform() { document.getElementById('lightbox-img').style.transform = `translate(${lbPosX}px, ${lbPosY}px) scale(${lbZoom})`; }
+        function configurarPanZoomLightbox() {
+            const lbBody = document.getElementById('lightbox-body'); let isDragging = false, startX, startY; let distInicial = null, zoomInicial = 1;
+            lbBody.addEventListener('wheel', (e) => { e.preventDefault(); lbZoom *= e.deltaY < 0 ? 1.1 : 0.9; if(lbZoom<0.2)lbZoom=0.2; if(lbZoom>6)lbZoom=6; atualizarLightboxTransform(); });
+            const downEvent = (e) => { if(e.touches && e.touches.length === 2) { distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = lbZoom; return; } isDragging = true; lbBody.style.cursor = 'grabbing'; startX = getClientX(e) - lbPosX; startY = getClientY(e) - lbPosY; };
+            const moveEvent = (e) => { if(e.touches && e.touches.length === 2 && distInicial) { e.preventDefault(); lbZoom = Math.min(Math.max(zoomInicial * (Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) / distInicial), 0.2), 6); atualizarLightboxTransform(); return; } if(!isDragging) return; e.preventDefault(); lbPosX = getClientX(e) - startX; lbPosY = getClientY(e) - startY; atualizarLightboxTransform(); };
+            const upEvent = () => { isDragging = false; lbBody.style.cursor = 'grab'; distInicial = null; };
+            lbBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent);
+            lbBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent);
+        }
+
+        // ================= OVERLAY ARRASTAR / PINÇA =================
         function mostrarOverlay(url) { const overlay = document.getElementById('overlay-schema'); if (!url) { overlay.classList.add('hidden'); return; } olZoom = 1; olPosX = 0; olPosY = 0; atualizarOverlayTransform(); document.getElementById('overlay-img').src = url; overlay.classList.remove('hidden'); }
         function fecharOverlay() { document.getElementById('overlay-schema').classList.add('hidden'); document.getElementById('overlay-selector').value = ""; }
         function configurarDraggableModal() { const overlay = document.getElementById('overlay-schema'); const header = document.getElementById('overlay-header'); let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; header.addEventListener('touchstart', dragStart, {passive: false}); header.addEventListener('mousedown', dragStart); function dragStart(e) { if(e.target.tagName.toLowerCase() === 'button') return; e.preventDefault(); pos3 = getClientX(e); pos4 = getClientY(e); document.onmouseup = closeDrag; document.ontouchend = closeDrag; document.onmousemove = elementDrag; document.ontouchmove = elementDrag; } function elementDrag(e) { e.preventDefault(); pos1 = pos3 - getClientX(e); pos2 = pos4 - getClientY(e); pos3 = getClientX(e); pos4 = getClientY(e); overlay.style.top = (overlay.offsetTop - pos2) + "px"; overlay.style.left = (overlay.offsetLeft - pos1) + "px"; } function closeDrag() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; } }
         function configurarResizeModal() { const overlay = document.getElementById('overlay-schema'); const handle = document.getElementById('modal-resize-handle'); let startW = 0, startH = 0, startX = 0, startY = 0; handle.addEventListener('touchstart', initResize, {passive: false}); handle.addEventListener('mousedown', initResize); function initResize(e) { e.preventDefault(); startW = parseInt(window.getComputedStyle(overlay).width, 10); startH = parseInt(window.getComputedStyle(overlay).height, 10); startX = getClientX(e); startY = getClientY(e); document.onmousemove = doResize; document.ontouchmove = doResize; document.onmouseup = stopResize; document.ontouchend = stopResize; } function doResize(e) { e.preventDefault(); overlay.style.width = (startW + getClientX(e) - startX) + 'px'; overlay.style.height = (startH + getClientY(e) - startY) + 'px'; } function stopResize() { document.onmousemove = null; document.ontouchmove = null; document.onmouseup = null; document.ontouchend = null; } }
         function atualizarOverlayTransform() { document.getElementById('overlay-img').style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`; }
-        function configurarPanZoomOverlayImage() { const olBody = document.getElementById('overlay-body'); let isOlDragging = false, olStartX, olStartY; let distInicialOl = null, zoomInicialOl = 1; olBody.addEventListener('wheel', (e) => { e.preventDefault(); olZoom *= e.deltaY < 0 ? 1.1 : 0.9; if(olZoom<0.2)olZoom=0.2; if(olZoom>5)olZoom=5; atualizarOverlayTransform(); }); const downEvent = (e) => { if(e.touches && e.touches.length === 2) { distInicialOl = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicialOl = olZoom; return; } isOlDragging = true; olStartX = getClientX(e) - olPosX; olStartY = getClientY(e) - olPosY; }; const moveEvent = (e) => { if(e.touches && e.touches.length === 2 && distInicialOl) { e.preventDefault(); olZoom = Math.min(Math.max(zoomInicialOl * (Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) / distInicialOl), 0.2), 5); atualizarOverlayTransform(); return; } if(!isOlDragging) return; e.preventDefault(); olPosX = getClientX(e) - olStartX; olPosY = getClientY(e) - olStartY; atualizarOverlayTransform(); }; const upEvent = () => { isOlDragging = false; distInicialOl = null; }; olBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent); olBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent); }
+        function configurarPanZoomOverlay() { const olBody = document.getElementById('overlay-body'); let isDragging = false, startX, startY; let distInicial = null, zoomInicial = 1; olBody.addEventListener('wheel', (e) => { e.preventDefault(); olZoom *= e.deltaY < 0 ? 1.1 : 0.9; if(olZoom<0.2)olZoom=0.2; if(olZoom>5)olZoom=5; atualizarOverlayTransform(); }); const downEvent = (e) => { if(e.touches && e.touches.length === 2) { distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = olZoom; return; } isDragging = true; olBody.style.cursor = 'grabbing'; startX = getClientX(e) - olPosX; startY = getClientY(e) - olPosY; }; const moveEvent = (e) => { if(e.touches && e.touches.length === 2 && distInicial) { e.preventDefault(); olZoom = Math.min(Math.max(zoomInicial * (Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) / distInicial), 0.2), 5); atualizarOverlayTransform(); return; } if(!isDragging) return; e.preventDefault(); olPosX = getClientX(e) - startX; olPosY = getClientY(e) - startY; atualizarOverlayTransform(); }; const upEvent = () => { isDragging = false; olBody.style.cursor = 'grab'; distInicial = null; }; olBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent); olBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent); }
 
-        // ================= ABA LAUDO E CONSTRUTOR DE ACHADOS =================
-        function inicializarEditorLaudo() {
-            const editor = document.getElementById('laudo-editor');
-            if(editor.value === "") editor.value = "LAUDO RADIOGRÁFICO\nTipo de Radiografia: Não informada\n\n";
-        }
-
-        function atualizarCabecalhoLaudo() {
-            const editor = document.getElementById('laudo-editor');
-            const tipo = document.getElementById('laudo-tipo-rx').value;
-            let texto = editor.value;
-            const titulo = "LAUDO RADIOGRÁFICO";
-            const tipoStr = tipo ? `Tipo de Radiografia: ${tipo}` : "Tipo de Radiografia: Não informada";
-            
-            if(texto.includes(titulo)) {
-                // Substitui a linha do tipo de radiografia
-                texto = texto.replace(/Tipo de Radiografia: .*/, tipoStr);
-                editor.value = texto;
-            } else {
-                editor.value = `${titulo}\n${tipoStr}\n\n` + texto;
-            }
-        }
-
+        // ================= LAUDO E CONSTRUTOR DE ACHADOS =================
         function syncLaudoImage() {
             if(!canvas) return;
-            // Tira um "print" do canvas atual com os desenhos
             const currentZoom = canvas.getZoom(); const currentVpt = canvas.viewportTransform.slice();
             canvas.setViewportTransform([1,0,0,1,0,0]); canvas.setZoom(1);
-            const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 0.8, multiplier: 1 });
+            const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 0.9, multiplier: 1.5 });
             canvas.setViewportTransform(currentVpt); canvas.setZoom(currentZoom);
-            
             document.getElementById('laudo-img-preview').src = dataUrl;
         }
 
@@ -427,153 +440,169 @@
         function fecharModalAchados() { document.getElementById('modal-achados').classList.add('hidden'); document.getElementById('achado-categoria').value = ""; document.getElementById('achado-campos').innerHTML = ""; }
 
         function renderizarCamposAchado() {
-            const cat = document.getElementById('achado-categoria').value;
-            const container = document.getElementById('achado-campos');
-            let html = '';
-
-            if (cat === 'dente') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Número do Dente</label>
-                    <input type="number" id="ach-dente-num" placeholder="Ex: 11, 48..." class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">
-                `;
-            } else if (cat === 'carie') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Faces Envolvidas</label>
-                    <div class="flex gap-3 mb-2">
-                        <label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Mesial (M)" class="neo-checkbox ach-face"> M</label>
-                        <label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Distal (D)" class="neo-checkbox ach-face"> D</label>
-                        <label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Oclusal (O)" class="neo-checkbox ach-face"> O</label>
-                        <label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Vestibular (V)" class="neo-checkbox ach-face"> V</label>
-                        <label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Lingual/Palatina (L/P)" class="neo-checkbox ach-face"> L/P</label>
-                    </div>
-                    <label class="text-xs font-bold text-gray-500 uppercase mt-2">Profundidade / Comprometimento</label>
-                    <select id="ach-profundidade" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">
-                        <option value="esmalte">Apenas Esmalte</option>
-                        <option value="dentina">Esmalte e Dentina</option>
-                        <option value="polpa">Atingindo câmara pulpar</option>
-                    </select>
-                    <div class="flex flex-col gap-2 mt-3">
-                        <label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-restauracao" class="neo-checkbox"> Material restaurador radiopaco associado</label>
-                        <label class="flex items-center gap-2 text-sm font-bold text-red-500"><input type="checkbox" id="ach-pulpar" class="neo-checkbox"> Suspeita de comprometimento pulpar</label>
-                    </div>
-                `;
-            } else if (cat === 'raiz') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Dente / Região</label>
-                    <input type="text" id="ach-raiz-dente" placeholder="Ex: Região do dente 36" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">
-                `;
-            } else if (cat === 'periapical') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Dente Associado</label>
-                    <input type="text" id="ach-peri-dente" placeholder="Ex: Ápice do dente 21" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">
-                    <label class="text-xs font-bold text-gray-500 uppercase">Limites da Lesão</label>
-                    <select id="ach-peri-limites" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">
-                        <option value="bem definidos">Bem definidos</option>
-                        <option value="mal definidos">Indefinidos / Mal definidos</option>
-                        <option value="escleróticos">Escleróticos (halo radiopaco)</option>
-                        <option value="não escleróticos">Não escleróticos</option>
-                    </select>
-                `;
-            } else if (cat === 'periodontal') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Extensão da Perda (Terço Radicular)</label>
-                    <select id="ach-perda-terco" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">
-                        <option value="terço cervical">Terço cervical</option>
-                        <option value="terço médio">Terço médio</option>
-                        <option value="terço apical">Terço apical</option>
-                    </select>
-                    <div class="flex flex-col gap-2">
-                        <label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-vertical" class="neo-checkbox"> Padrão vertical (angular)</label>
-                        <label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-esfumacamento" class="neo-checkbox"> Esfumaçamento da crista óssea alveolar</label>
-                    </div>
-                `;
-            } else if (cat === 'anomalia') {
-                html = `
-                    <label class="text-xs font-bold text-gray-500 uppercase">Selecione a Anomalia</label>
-                    <select id="ach-anomalia-tipo" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">
-                        <option value="Microdontia">Microdontia</option>
-                        <option value="Macrodontia">Macrodontia</option>
-                        <option value="Taurodontismo">Taurodontismo</option>
-                        <option value="Dilaceração Radicular">Dilaceração Radicular</option>
-                        <option value="Dens in dente">Dens in dente (Dens invaginatus)</option>
-                        <option value="Amelogênese Imperfeita">Amelogênese Imperfeita</option>
-                        <option value="Odontoma (Composto/Complexo)">Odontoma</option>
-                        <option value="Dente Supranumerário">Dente Supranumerário</option>
-                        <option value="Agenesia">Agenesia</option>
-                    </select>
-                    <label class="text-xs font-bold text-gray-500 uppercase">Região / Dente Envolvido</label>
-                    <input type="text" id="ach-anomalia-regiao" placeholder="Ex: Incisivo lateral superior" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">
-                `;
-            } else {
-                html = `<p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>`;
-            }
+            const cat = document.getElementById('achado-categoria').value; const container = document.getElementById('achado-campos'); let html = '';
+            if (cat === 'dente') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Número do Dente</label><input type="number" id="ach-dente-num" placeholder="Ex: 11, 48..." class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">`; } 
+            else if (cat === 'carie') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Faces Envolvidas</label><div class="flex gap-3 mb-2"><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Mesial (M)" class="neo-checkbox ach-face"> M</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Distal (D)" class="neo-checkbox ach-face"> D</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Oclusal (O)" class="neo-checkbox ach-face"> O</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Vestibular (V)" class="neo-checkbox ach-face"> V</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Lingual (L)" class="neo-checkbox ach-face"> L</label></div><label class="text-xs font-bold text-gray-500 uppercase mt-2">Comprometimento</label><select id="ach-profundidade" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none"><option value="esmalte">Apenas Esmalte</option><option value="dentina">Esmalte e Dentina</option><option value="polpa">Atingindo câmara pulpar</option></select><div class="flex flex-col gap-2 mt-3"><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-restauracao" class="neo-checkbox"> Material restaurador radiopaco associado</label><label class="flex items-center gap-2 text-sm font-bold text-red-500"><input type="checkbox" id="ach-pulpar" class="neo-checkbox"> Comprometimento pulpar</label></div>`; } 
+            else if (cat === 'raiz') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Dente / Região</label><input type="text" id="ach-raiz-dente" placeholder="Ex: Região do dente 36" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">`; } 
+            else if (cat === 'periapical') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Dente Associado</label><input type="text" id="ach-peri-dente" placeholder="Ex: Ápice do dente 21" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3"><label class="text-xs font-bold text-gray-500 uppercase">Limites da Lesão</label><select id="ach-peri-limites" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none"><option value="DEFINIDOS">DEFINIDOS</option><option value="INDEFINIDOS">INDEFINIDOS</option><option value="ESCLERÓTICOS">ESCLERÓTICOS</option><option value="NÃO ESCLERÓTICOS">NÃO ESCLERÓTICOS</option></select>`; } 
+            else if (cat === 'periodontal') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Extensão da Perda (Terço Radicular)</label><select id="ach-perda-terco" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3"><option value="terço cervical da raiz">Terço cervical</option><option value="terço médio da raiz">Terço médio</option><option value="terço apical da raiz">Terço apical</option></select><div class="flex flex-col gap-2"><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-vertical" class="neo-checkbox"> Perda óssea vertical na região</label><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-esfumacamento" class="neo-checkbox"> Esfumaçamento da crista óssea alveolar</label></div>`; } 
+            else if (cat === 'anomalia') { html = `<label class="text-xs font-bold text-gray-500 uppercase">Selecione a Anomalia</label><select id="ach-anomalia-tipo" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3"><option value="Microdontia">Microdontia</option><option value="Macrodontia">Macrodontia</option><option value="Taurodontismo">Taurodontismo</option><option value="Dilaceração Radicular">Dilaceração Radicular</option><option value="Dens in dente">Dens in dente</option><option value="Amelogênese Imperfeita">Amelogênese Imperfeita</option><option value="Odontoma">Odontoma</option><option value="Dente Supranumerário">Dente Supranumerário</option><option value="Agenesia">Agenesia</option></select><label class="text-xs font-bold text-gray-500 uppercase">Região / Dente</label><input type="text" id="ach-anomalia-regiao" placeholder="Ex: Incisivo lateral superior" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none">`; } 
+            else { html = `<p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>`; }
             container.innerHTML = html;
         }
 
         function inserirTextoAchado() {
-            const cat = document.getElementById('achado-categoria').value;
-            if(!cat) { alert('Selecione uma categoria primeiro.'); return; }
+            const cat = document.getElementById('achado-categoria').value; if(!cat) { alert('Selecione uma categoria primeiro.'); return; }
             let textoFiltro = "";
 
+            // SETA COMO BULLET REQUISITADA
             if (cat === 'dente') {
                 const num = document.getElementById('ach-dente-num').value;
-                textoFiltro = num ? `• Dente ${num}: ` : `• Dente: `;
-            } 
-            else if (cat === 'carie') {
+                textoFiltro = num ? `➢ Dente ${num}: ` : `➢ Dente: `;
+            } else if (cat === 'carie') {
                 const faces = Array.from(document.querySelectorAll('.ach-face:checked')).map(cb => cb.value).join(', ');
-                const prof = document.getElementById('ach-profundidade').value;
-                const rest = document.getElementById('ach-restauracao').checked;
-                const pulp = document.getElementById('ach-pulpar').checked;
-                
-                textoFiltro = `• Imagem radiolúcida sugestiva de lesão cariosa`;
-                if(faces) textoFiltro += ` nas faces: ${faces}`;
-                textoFiltro += `, com profundidade atingindo ${prof}.`;
-                if(rest) textoFiltro += ` Observa-se presença de material restaurador radiopaco adjacente.`;
-                if(pulp) textoFiltro += ` Possível comprometimento da câmara pulpar.`;
-            }
-            else if (cat === 'raiz') {
+                const prof = document.getElementById('ach-profundidade').value; const rest = document.getElementById('ach-restauracao').checked; const pulp = document.getElementById('ach-pulpar').checked;
+                textoFiltro = `➢ Lesão cariosa detectada`; if(faces) textoFiltro += ` nas faces: ${faces}`; textoFiltro += `, com comprometimento atingindo ${prof}.`; if(rest) textoFiltro += ` Observa-se presença de material restaurador radiopaco.`; if(pulp) textoFiltro += ` Possível comprometimento da câmara pulpar.`;
+            } else if (cat === 'raiz') {
                 const dente = document.getElementById('ach-raiz-dente').value || "não especificado";
-                textoFiltro = `• Presença de imagem radiopaca compatível com raiz residual na região do ${dente}.`;
-            }
-            else if (cat === 'periapical') {
-                const dente = document.getElementById('ach-peri-dente').value || "dente não especificado";
-                const lim = document.getElementById('ach-peri-limites').value;
-                textoFiltro = `• Imagem radiolúcida na região periapical do ${dente}, com limites ${lim}, sugestiva de lesão periapical.`;
-            }
-            else if (cat === 'periodontal') {
-                const terco = document.getElementById('ach-perda-terco').value;
-                const vert = document.getElementById('ach-perda-vertical').checked;
-                const esf = document.getElementById('ach-perda-esfumacamento').checked;
-                
-                textoFiltro = `• Perda óssea periodontal atingindo o ${terco} da raiz.`;
-                if(vert) textoFiltro += ` Padrão de reabsorção óssea vertical (angular).`;
-                if(esf) textoFiltro += ` Nota-se esfumaçamento/rompimento da crista óssea alveolar.`;
-            }
-            else if (cat === 'anomalia') {
-                const tipo = document.getElementById('ach-anomalia-tipo').value;
-                const regiao = document.getElementById('ach-anomalia-regiao').value;
-                textoFiltro = `• Anomalia dentária identificada: ${tipo}`;
-                if(regiao) textoFiltro += ` na região de ${regiao}.`;
+                textoFiltro = `➢ Raiz residual evidenciada na região: ${dente}.`;
+            } else if (cat === 'periapical') {
+                const dente = document.getElementById('ach-peri-dente').value || "dente não especificado"; const lim = document.getElementById('ach-peri-limites').value;
+                textoFiltro = `➢ Lesão periapical na região do ${dente}, apresentando limites ${lim}.`;
+            } else if (cat === 'periodontal') {
+                const terco = document.getElementById('ach-perda-terco').value; const vert = document.getElementById('ach-perda-vertical').checked; const esf = document.getElementById('ach-perda-esfumacamento').checked;
+                textoFiltro = `➢ Perda óssea periodontal atingindo o ${terco}.`; if(vert) textoFiltro += ` Perda óssea vertical na região identificada.`; if(esf) textoFiltro += ` Esfumaçamento da crista óssea alveolar presente.`;
+            } else if (cat === 'anomalia') {
+                const tipo = document.getElementById('ach-anomalia-tipo').value; const regiao = document.getElementById('ach-anomalia-regiao').value;
+                textoFiltro = `➢ Anomalia identificada (${tipo})`; if(regiao) textoFiltro += ` afetando a região de ${regiao}.`;
             }
 
             const editor = document.getElementById('laudo-editor');
-            editor.value += (editor.value.endsWith('\n') ? '' : '\n') + textoFiltro + '\n';
+            editor.value += (editor.value ? '\n' : '') + textoFiltro;
             fecharModalAchados();
         }
 
-        // ================= PDF E EXPORTAÇÃO =================
+        // ================= GERADOR DE PDF PROFISSIONAL (LAUDO) =================
+        async function gerarPDFLaudo() {
+            const textoLaudo = document.getElementById('laudo-editor').value;
+            const nomeAluno = document.getElementById('laudo-nome-aluno').value.trim();
+            const paciente = document.getElementById('laudo-paciente').value.trim() || "Não informado";
+            const tipoRx = document.getElementById('laudo-tipo-rx').value;
+            const imgLaudo = document.getElementById('laudo-img-preview').src;
 
-        // PDF apenas das Imagens (Aba Relatório)
+            const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
+            
+            // TITULO EXATO SOLICITADO
+            pdf.setFontSize(16); pdf.setFont(undefined, 'bold'); pdf.setTextColor(0, 0, 0); 
+            pdf.text("LAUDO RADIOGRÁFICO", pageWidth/2, 20, { align: "center" });
+            
+            pdf.setFontSize(12); pdf.setTextColor(50, 50, 50);
+            const tipoStr = tipoRx ? `RADIOGRAFIA ${tipoRx.toUpperCase()}` : "RADIOGRAFIA NÃO ESPECIFICADA";
+            pdf.text(tipoStr, pageWidth/2, 28, { align: "center" });
+
+            // Paciente e Data (Esquerda)
+            pdf.setFontSize(11); pdf.setFont(undefined, 'normal'); pdf.setTextColor(30, 30, 30);
+            pdf.text(`Paciente: ${paciente}`, 15, 40);
+            pdf.text(`Data: ${new Date().toLocaleDateString()}`, 15, 46);
+
+            // Linha divisoria
+            pdf.setDrawColor(180, 180, 180);
+            pdf.line(15, 52, pageWidth - 15, 52);
+
+            let yOffset = 60;
+
+            // Radiografia Centralizada com Fundo Cinza (Contorno Neumorfico)
+            if(imgLaudo && !imgLaudo.includes("placeholder")) {
+                try {
+                    const imgProps = pdf.getImageProperties(imgLaudo);
+                    const maxWidth = pageWidth - 40; 
+                    let pdfHeight = (imgProps.height * maxWidth) / imgProps.width;
+                    let pdfWidth = maxWidth;
+                    if (pdfHeight > 85) { pdfHeight = 85; pdfWidth = (imgProps.width * pdfHeight) / imgProps.height; }
+                    const xOffset = (pageWidth - pdfWidth) / 2;
+                    
+                    // Fundo cinza simulando o frame
+                    pdf.setFillColor(242, 242, 245);
+                    pdf.rect(xOffset - 3, yOffset - 3, pdfWidth + 6, pdfHeight + 6, 'F');
+                    
+                    pdf.addImage(imgLaudo, 'JPEG', xOffset, yOffset, pdfWidth, pdfHeight);
+                    yOffset += pdfHeight + 15;
+                } catch(e) {}
+            }
+
+            // Subtítulo de Achados
+            pdf.setFontSize(12); pdf.setFont(undefined, 'bold'); pdf.setTextColor(0, 0, 0);
+            pdf.text("ACHADOS RADIOGRÁFICOS", 15, yOffset);
+            yOffset += 8;
+
+            // PARSER DE TEXTO (NEGRITO EM "Dente XX:" E RECUO DOS BULLETS)
+            pdf.setFontSize(11); pdf.setTextColor(40, 40, 40);
+            const linhas = textoLaudo.split('\n');
+            
+            for (let linha of linhas) {
+                if (!linha.trim()) { yOffset += 4; continue; } 
+
+                let isBullet = linha.trim().startsWith('➢');
+                let indentX = isBullet ? 22 : 15; // Recuo para direita no bullet
+
+                // Verifica Dente XX:
+                let match = linha.match(/(^➢?\s?Dente\s\d+\s?:)/i);
+                
+                if (match && isBullet) {
+                    let boldPart = match[1];
+                    let restPart = linha.substring(linha.indexOf(boldPart) + boldPart.length);
+
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text(boldPart, indentX, yOffset);
+                    let boldWidth = pdf.getTextWidth(boldPart);
+
+                    pdf.setFont(undefined, 'normal');
+                    let splittedRest = pdf.splitTextToSize(" " + restPart.trim(), pageWidth - indentX - boldWidth - 15);
+
+                    pdf.text(splittedRest[0], indentX + boldWidth, yOffset);
+                    yOffset += 6;
+
+                    for(let i=1; i<splittedRest.length; i++) {
+                        if (yOffset > 260) { pdf.addPage(); yOffset = 20; }
+                        pdf.text(splittedRest[i], indentX + boldWidth, yOffset);
+                        yOffset += 6;
+                    }
+                } else {
+                    pdf.setFont(undefined, 'normal');
+                    let splitted = pdf.splitTextToSize(linha, pageWidth - indentX - 15);
+                    for(let i=0; i<splitted.length; i++) {
+                        if (yOffset > 260) { pdf.addPage(); yOffset = 20; }
+                        pdf.text(splitted[i], indentX, yOffset);
+                        yOffset += 6;
+                    }
+                }
+                yOffset += 2; // Espaço entre parágrafos
+            }
+
+            // Footer (Disclaimer Absoluto)
+            const footerY = 275;
+            pdf.setDrawColor(150, 150, 150); pdf.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+            pdf.setFontSize(7); pdf.setTextColor(120, 120, 120); pdf.setFont(undefined, 'italic');
+            
+            const txtAssinatura = nomeAluno ? `elaborado pelo acadêmico(a) ${nomeAluno}` : "elaborado por um acadêmico de Odontologia";
+            const disclaimer = `DISCLAIMER: O presente laudo possui caráter estritamente acadêmico e foi ${txtAssinatura} sob supervisão docente. A assinatura final, revisão técnica e responsabilidade diagnóstica cabem exclusivamente ao Prof. Dr. Paulo de Tarso S. de Macedo (Especialista em Radiologia Odontológica).`;
+            const linhasDisc = pdf.splitTextToSize(disclaimer, pageWidth - 30);
+            pdf.text(linhasDisc, 15, footerY);
+
+            const nomeArquivo = paciente !== "Não informado" ? `Laudo_${paciente.replace(/\s+/g, '_')}.pdf` : "Laudo_Radiografico.pdf";
+            pdf.save(nomeArquivo);
+        }
+
+        // PDF SIMPLES (Aba Relatório de Imagens Base)
         function atualizarGaleriaSalvas() {
             const div = document.getElementById('galeria-salvas'); div.innerHTML = "";
             if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
             imagensSalvas.forEach((img, idx) => { div.innerHTML += `<div class="relative neo-panel p-2 flex items-center justify-center"><img src="${img}" class="w-full h-32 object-cover rounded-xl border border-gray-300"><div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded shadow-md">Fig. ${idx+1}</div></div>`; });
         }
-
         async function gerarPDFRelatorio() {
-            if(imagensSalvas.length === 0) { alert("Nenhuma imagem para o relatório."); return; }
+            if(imagensSalvas.length === 0) { alert("Nenhuma imagem base salva."); return; }
             const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
-            pdf.setFontSize(22); pdf.setTextColor(59, 130, 246); pdf.text("Relatório de Imagens", 15, 20);
+            pdf.setFontSize(22); pdf.setTextColor(59, 130, 246); pdf.text("Relatório de Imagens Base", 15, 20);
             let yOffset = 30;
             for(let i=0; i<imagensSalvas.length; i++) {
                 if (yOffset > 220) { pdf.addPage(); yOffset = 20; }
@@ -585,73 +614,7 @@
                 pdf.addImage(imgData, 'JPEG', xOffset, yOffset, pdfWidth, pdfHeight);
                 yOffset += pdfHeight + 10;
             }
-            pdf.save("Imagens_RadioOdonto.pdf");
-        }
-
-        // PDF COMPLETO DO LAUDO (Aba Laudo)
-        async function gerarPDFLaudo() {
-            const textoLaudo = document.getElementById('laudo-editor').value;
-            if(!textoLaudo.trim()) { alert("O laudo está vazio!"); return; }
-            const nomeAluno = document.getElementById('laudo-nome-aluno').value.trim();
-            const imgLaudo = document.getElementById('laudo-img-preview').src;
-
-            const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
-            
-            // Cabeçalho da Clínica/Universidade
-            pdf.setFontSize(16); pdf.setFont(undefined, 'bold'); pdf.setTextColor(30, 58, 138); 
-            pdf.text("UNIFSA - NÚCLEO DE RADIOLOGIA ODONTOLÓGICA", pageWidth/2, 20, { align: "center" });
-            
-            pdf.setFontSize(12); pdf.setTextColor(100, 100, 100); pdf.setFont(undefined, 'normal');
-            pdf.text(`Data do Laudo: ${new Date().toLocaleDateString()}`, pageWidth/2, 28, { align: "center" });
-            pdf.line(15, 33, pageWidth - 15, 33);
-
-            let yOffset = 40;
-
-            // Inserir Imagem no PDF se houver uma válida (diferente do placeholder)
-            if(imgLaudo && !imgLaudo.includes("placeholder")) {
-                try {
-                    const imgProps = pdf.getImageProperties(imgLaudo);
-                    const maxWidth = pageWidth - 40; 
-                    let pdfHeight = (imgProps.height * maxWidth) / imgProps.width;
-                    let pdfWidth = maxWidth;
-                    if (pdfHeight > 90) { pdfHeight = 90; pdfWidth = (imgProps.width * pdfHeight) / imgProps.height; }
-                    const xOffset = (pageWidth - pdfWidth) / 2;
-                    pdf.setDrawColor(200, 200, 200); pdf.rect(xOffset, yOffset, pdfWidth, pdfHeight);
-                    pdf.addImage(imgLaudo, 'JPEG', xOffset, yOffset, pdfWidth, pdfHeight);
-                    yOffset += pdfHeight + 15;
-                } catch(e) {}
-            }
-
-            // Inserir Nome do Aluno
-            if(nomeAluno) {
-                pdf.setFontSize(12); pdf.setTextColor(20, 20, 20); pdf.setFont(undefined, 'bold');
-                pdf.text(`Acadêmico(a) Responsável: ${nomeAluno}`, 15, yOffset);
-                yOffset += 10;
-            }
-
-            // Inserir Texto do Laudo
-            pdf.setFontSize(11); pdf.setFont(undefined, 'normal'); pdf.setTextColor(40, 40, 40);
-            const linhasTexto = pdf.splitTextToSize(textoLaudo, pageWidth - 30);
-            
-            // Controle de Paginação pro texto
-            for(let i=0; i<linhasTexto.length; i++) {
-                if (yOffset > 260) { pdf.addPage(); yOffset = 20; }
-                pdf.text(linhasTexto[i], 15, yOffset);
-                yOffset += 6;
-            }
-
-            // Disclaimer e Assinatura no Rodapé (Absoluto na página final)
-            const footerY = 275;
-            pdf.setDrawColor(150, 150, 150);
-            pdf.line(15, footerY - 5, pageWidth - 15, footerY - 5);
-            
-            pdf.setFontSize(7); pdf.setTextColor(120, 120, 120); pdf.setFont(undefined, 'italic');
-            const disclaimer = "DISCLAIMER: O presente laudo possui caráter estritamente acadêmico e foi elaborado por um acadêmico de Odontologia sob a supervisão docente. A assinatura final, revisão técnica e responsabilidade pelo diagnóstico cabem exclusivamente ao Prof. Dr. Paulo de Tarso S. de Macedo (Especialista em Radiologia Odontológica).";
-            const linhasDisc = pdf.splitTextToSize(disclaimer, pageWidth - 30);
-            pdf.text(linhasDisc, 15, footerY);
-
-            const nomeArquivo = nomeAluno ? `Laudo_${nomeAluno.replace(/\s+/g, '_')}.pdf` : "Laudo_Radiografico_UNIFSA.pdf";
-            pdf.save(nomeArquivo);
+            pdf.save("Imagens_Base_RadioOdonto.pdf");
         }
     </script>
 </body>
