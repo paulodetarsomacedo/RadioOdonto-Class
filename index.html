@@ -2,11 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- user-scalable=no impede o zoom automático de acessibilidade do Safari que quebra o app -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RadioOdonto - Laudo Neumórfico</title>
+    <title>RadioOdonto - UNIFSA</title>
     
-    <!-- Bibliotecas Necessárias -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -26,7 +24,6 @@
             overflow-x: hidden; 
             background-color: var(--bg-color); 
             color: var(--text-color);
-            /* Impede a seleção de texto acidental ao clicar rápido no celular */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -34,6 +31,7 @@
         .no-scrollbar { scrollbar-width: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
+        /* Neumorfismo */
         .neo-panel {
             background: var(--bg-color);
             box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
@@ -74,20 +72,48 @@
             border-radius: 1rem;
         }
 
-        /* Trava essencial para o iPhone não puxar a tela ao desenhar */
+        /* Travas para iPhone (Impede a tela de puxar e arrastar) */
         #canvas-wrapper, .canvas-container {
             touch-action: none !important; 
             margin: 0 auto;
         }
+        #overlay-body { touch-action: none !important; }
+        #modal-resize-handle { touch-action: none !important; }
 
-        #overlay-schema { resize: both; overflow: hidden; }
-        #overlay-body { touch-action: none; }
+        /* Animação do Loading */
+        @keyframes loadingBar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        .animate-loading-bar {
+            animation: loadingBar 1.5s infinite linear;
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
+    <!-- ========================================== -->
+    <!-- TELA DE LOADING NEUMÓRFICA                 -->
+    <!-- ========================================== -->
+    <div id="loading-screen" class="fixed inset-0 z-[999] bg-[#e0e5ec] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-auto">
+        <div class="neo-panel p-8 flex flex-col items-center max-w-sm sm:max-w-md mx-4 text-center">
+            <i class="fa-solid fa-tooth text-blue-500 text-6xl mb-6 animate-pulse"></i>
+            <h1 class="text-3xl font-extrabold text-gray-500 mb-4 tracking-widest uppercase">RadioOdonto</h1>
+            
+            <div class="w-full h-2 neo-inset rounded-full overflow-hidden mb-6 relative">
+                <div class="absolute top-0 left-0 h-full w-1/2 bg-blue-500 rounded-full animate-loading-bar"></div>
+            </div>
+            
+            <div class="text-sm font-bold text-gray-600 mb-1">Desenvolvido pelo Prof. Dr. Paulo de Tarso S. de Macedo</div>
+            <div class="text-xs text-gray-400 font-semibold tracking-wide">em parceria com o núcleo de T.I da UNIFSA</div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- HEADER E NAVEGAÇÃO                         -->
+    <!-- ========================================== -->
     <header class="p-4 flex flex-col gap-4 z-10">
-        <div class="text-center text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm">
+        <div class="text-center text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto
         </div>
         
@@ -100,7 +126,9 @@
 
     <main class="flex-1 overflow-y-auto relative px-4 pb-4 flex flex-col">
         
-        <!-- ABA ANATOMIA -->
+        <!-- ========================================== -->
+        <!-- ABA ANATOMIA                               -->
+        <!-- ========================================== -->
         <div id="aba-anatomia" class="flex-1 flex flex-col gap-4 h-full">
             
             <div class="neo-panel p-4 flex gap-3 flex-wrap items-center justify-between z-10">
@@ -116,9 +144,7 @@
                 </div>
             </div>
 
-            <!-- Ferramentas -->
             <div class="neo-panel px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar items-center z-10">
-                <!-- Nova Ferramenta: Selecionar -->
                 <button onclick="setTool('edit')" id="btn-edit" class="px-4 py-3 neo-pressed text-gray-700 min-w-max"><i class="fa-solid fa-arrow-pointer"></i> Selecionar</button>
                 <button onclick="setTool('pan')" id="btn-pan" class="px-4 py-3 neo-button text-blue-500 min-w-max"><i class="fa-solid fa-hand"></i> Mover Tela</button>
                 <button onclick="setTool('draw')" id="btn-draw" class="px-4 py-3 neo-button text-red-500 min-w-max"><i class="fa-solid fa-pen"></i> Pincel</button>
@@ -141,20 +167,20 @@
 
             <div id="canvas-wrapper" class="flex-1 neo-screen relative flex justify-center items-center overflow-hidden">
                 <canvas id="fabric-canvas"></canvas>
-                <div class="absolute bottom-4 right-4 flex flex-col gap-3 z-40">
-                    <button onclick="zoomCanvas(1.2)" class="w-12 h-12 neo-button flex items-center justify-center text-xl">+</button>
-                    <button onclick="zoomCanvas(0.8)" class="w-12 h-12 neo-button flex items-center justify-center text-xl">-</button>
-                </div>
             </div>
         </div>
 
-        <!-- ABA ESTUDO -->
+        <!-- ========================================== -->
+        <!-- ABA ESTUDO                                 -->
+        <!-- ========================================== -->
         <div id="aba-estudo" class="hidden h-full flex-col">
             <h2 class="text-xl font-extrabold mb-4 text-center text-gray-500 uppercase tracking-widest mt-2">Esquemas de Referência</h2>
             <div id="estudo-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-2 pb-10"></div>
         </div>
 
-        <!-- ABA RELATÓRIO -->
+        <!-- ========================================== -->
+        <!-- ABA RELATÓRIO                              -->
+        <!-- ========================================== -->
         <div id="aba-relatorio" class="hidden h-full flex-col gap-4">
             <h2 class="text-xl font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Salvas</h2>
             <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
@@ -167,21 +193,24 @@
         </div>
     </main>
 
-    <!-- OVERLAY MODAL -->
-    <div id="overlay-schema" class="hidden absolute top-48 left-10 neo-panel z-50 flex flex-col w-64 h-64 max-w-[90vw] bg-[#e0e5ec]">
+    <!-- ========================================== -->
+    <!-- OVERLAY MODAL (ARRASTAR E REDIMENSIONAR)   -->
+    <!-- ========================================== -->
+    <div id="overlay-schema" class="hidden absolute top-48 left-10 neo-panel z-50 flex flex-col bg-[#e0e5ec] overflow-hidden" style="width: 260px; height: 260px; min-width: 150px; min-height: 150px; max-width: 95vw; max-height: 80vh;">
+        <!-- Cabeçalho para Arrastar -->
         <div id="overlay-header" class="px-3 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
-            <span class="font-bold text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
-            <div class="flex items-center gap-2 pointer-events-auto">
-                <button onclick="zoomOverlayImg(0.8)" class="neo-button w-6 h-6 flex items-center justify-center text-xs">-</button>
-                <button onclick="zoomOverlayImg(1.2)" class="neo-button w-6 h-6 flex items-center justify-center text-xs">+</button>
-                <button onclick="fecharOverlay()" class="neo-button w-6 h-6 flex items-center justify-center text-xs text-red-500 ml-2">X</button>
-            </div>
+            <span class="font-bold text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> MOVER</span>
+            <button onclick="fecharOverlay()" class="neo-button w-7 h-7 flex items-center justify-center text-xs text-red-500 pointer-events-auto">X</button>
         </div>
-        <div id="overlay-body" class="flex-1 neo-inset m-2 overflow-hidden relative cursor-grab flex items-center justify-center">
+        
+        <!-- Corpo com a Imagem (Gesto Pinça / Pan) -->
+        <div id="overlay-body" class="flex-1 neo-inset m-2 relative cursor-grab flex items-center justify-center overflow-hidden">
             <img id="overlay-img" src="" class="max-w-none max-h-none origin-center pointer-events-none" style="transform: translate(0px, 0px) scale(1);" />
         </div>
-        <div class="absolute bottom-0 right-0 p-1 pointer-events-none text-gray-400 text-[10px]">
-            <i class="fa-solid fa-arrow-up-right-dots fa-flip-horizontal"></i>
+
+        <!-- Alça de Redimensionamento Exclusiva para Celular -->
+        <div id="modal-resize-handle" class="absolute bottom-0 right-0 w-8 h-8 flex items-end justify-end p-2 cursor-se-resize bg-transparent z-10">
+            <i class="fa-solid fa-signal fa-flip-horizontal text-gray-400 text-[12px] opacity-70"></i>
         </div>
     </div>
 
@@ -211,14 +240,23 @@
         let imagensSalvas =[];
 
         // Variáveis Overlay
-        let olZoom = 1, olPosX = 0, olPosY = 0, isOlDragging = false, olStartX, olStartY;
+        let olZoom = 1, olPosX = 0, olPosY = 0;
 
         window.onload = () => {
+            // Remove o Loading após 2.5 segundos para mostrar a animação
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.remove(), 1000);
+            }, 2500);
+
             initCanvas();
             carregarEstudos();
             configurarDraggableModal();
-            configurarPanZoomOverlayImage();
-            setTool('edit'); // Agora começa no modo selecionar para evitar arrastar sem querer
+            configurarResizeModal(); // Redimensionamento novo p/ iPhone
+            configurarPanZoomOverlayImage(); // Gesto pinça no overlay
+            configurarZoomPinçaCanvas(); // Gesto pinça na radiografia
+            setTool('edit');
         };
 
         function mudarAba(aba) {['anatomia', 'estudo', 'relatorio'].forEach(a => {
@@ -229,16 +267,18 @@
 
             const current = document.getElementById(`aba-${aba}`);
             current.classList.remove('hidden');
-            current.classList.add(aba === 'anatomia' ? 'flex' : 'flex');
+            current.classList.add('flex');
             document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-3 text-sm sm:text-base neo-pressed transition";
 
             if(aba === 'anatomia' && canvas) canvas.calcOffset();
         }
 
-        // Função segura para pegar coordenadas no iPhone/Touch
         function getClientX(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX; }
         function getClientY(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY; }
 
+        // ==========================================
+        // FABRIC JS E ZOOM NA RADIOGRAFIA
+        // ==========================================
         function initCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
             canvas = new fabric.Canvas('fabric-canvas', {
@@ -247,7 +287,6 @@
                 isDrawingMode: false,
                 selection: true
             });
-            
             canvas.freeDrawingBrush.color = "#FF3333";
             canvas.freeDrawingBrush.width = 3;
 
@@ -274,10 +313,9 @@
                 }
             });
             
-            canvas.on('mouse:up', function() {
-                this.isDragging = false;
-            });
+            canvas.on('mouse:up', function() { this.isDragging = false; });
 
+            // Scroll do mouse para zoom
             canvas.on('mouse:wheel', function(opt) {
                 var delta = opt.e.deltaY;
                 var zoom = canvas.getZoom();
@@ -295,17 +333,45 @@
             });
         }
 
+        // GESTO DE PINÇA NO IPHONE (CANVAS PRINCIPAL)
+        function configurarZoomPinçaCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            let distInicial = null;
+            let zoomInicial = 1;
+
+            wrapper.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    zoomInicial = canvas.getZoom();
+                }
+            }, {passive: false});
+
+            wrapper.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && distInicial) {
+                    e.preventDefault(); // Impede a tela do iphone de dar zoom total
+                    let distAtual = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    let scale = distAtual / distInicial;
+                    let novoZoom = zoomInicial * scale;
+                    if (novoZoom > 10) novoZoom = 10;
+                    if (novoZoom < 0.1) novoZoom = 0.1;
+                    
+                    let pt = new fabric.Point(
+                        (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    );
+                    canvas.zoomToPoint(pt, novoZoom);
+                }
+            }, {passive: false});
+        }
+
         document.getElementById('image-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
-                    // Centralizar e ajustar perfeitamente ao tamanho da tela
                     const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
                     img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
-                    
-                    // Reseta o zoom e a posição da tela para não sumir a imagem
                     canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
                     canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                 });
@@ -313,7 +379,7 @@
             reader.readAsDataURL(file);
         });
 
-        // Controle de Ferramentas Corrigido
+        // FERRAMENTAS
         function resetToolsUI() {
             ['pan', 'draw', 'edit'].forEach(b => {
                 let elem = document.getElementById(`btn-${b}`);
@@ -326,291 +392,210 @@
             document.getElementById(`btn-${tool}`).classList.replace('neo-button', 'neo-pressed');
 
             if(tool === 'pan') {
-                isPanning = true;
-                canvas.isDrawingMode = false;
-                canvas.forEachObject(o => o.selectable = false);
-                canvas.discardActiveObject();
-                canvas.requestRenderAll();
+                isPanning = true; canvas.isDrawingMode = false;
+                canvas.forEachObject(o => o.selectable = false); canvas.discardActiveObject(); canvas.requestRenderAll();
             } else if (tool === 'edit') {
-                isPanning = false;
-                canvas.isDrawingMode = false;
+                isPanning = false; canvas.isDrawingMode = false;
                 canvas.forEachObject(o => o.selectable = true);
             } else if (tool === 'draw') {
-                isPanning = false;
-                canvas.isDrawingMode = true;
-                canvas.forEachObject(o => o.selectable = false);
-                canvas.discardActiveObject();
-                canvas.requestRenderAll();
+                isPanning = false; canvas.isDrawingMode = true;
+                canvas.forEachObject(o => o.selectable = false); canvas.discardActiveObject(); canvas.requestRenderAll();
             }
         }
 
-        function addText() {
-            setTool('edit'); // Muda direto pro modo seta para editar a palavra sem mover a tela
-            const text = new fabric.IText('Clique p/ Editar', {
-                left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center',
-                fontFamily: 'Arial', fill: '#10B981', fontSize: 24, editable: true, fontWeight: 'bold'
-            });
-            canvas.add(text);
-            canvas.setActiveObject(text);
-        }
+        function addText() { setTool('edit'); const text = new fabric.IText('Editar Texto', { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center', fontFamily: 'Arial', fill: '#10B981', fontSize: 24, editable: true, fontWeight: 'bold' }); canvas.add(text); canvas.setActiveObject(text); }
+        function addLine() { setTool('edit'); const line = new fabric.Line([50, 50, 200, 50], { stroke: '#F59E0B', strokeWidth: 4, selectable: true, hasControls: true, hasBorders: true, left: canvas.width / 2 - 75, top: canvas.height / 2 }); canvas.add(line); }
+        function addPolygon() { setTool('edit'); const triangle = new fabric.Triangle({ width: 100, height: 100, fill: 'transparent', stroke: '#14B8A6', strokeWidth: 4, left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' }); canvas.add(triangle); }
+        function addArrow() { setTool('edit'); const line = new fabric.Line([0, 0, 100, 0], { stroke: '#A855F7', strokeWidth: 4 }); const head = new fabric.Triangle({ width: 18, height: 18, fill: '#A855F7', left: 100, top: 0, originX: 'center', originY: 'center', angle: 90 }); const arrow = new fabric.Group([line, head], { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' }); canvas.add(arrow); }
+        function deleteSelected() { const act = canvas.getActiveObjects(); if(act.length) { act.forEach(obj => canvas.remove(obj)); canvas.discardActiveObject(); } }
+        function clearCanvas() { if(confirm('Apagar apenas as anotações? (O raio-x continua)')) { canvas.getObjects().forEach(o => canvas.remove(o)); } }
 
-        function addLine() {
-            setTool('edit');
-            const line = new fabric.Line([50, 50, 200, 50], {
-                stroke: '#F59E0B', strokeWidth: 4, selectable: true, hasControls: true, hasBorders: true,
-                left: canvas.width / 2 - 75, top: canvas.height / 2
-            });
-            canvas.add(line);
-        }
-
-        function addPolygon() {
-            setTool('edit');
-            const triangle = new fabric.Triangle({
-                width: 100, height: 100, fill: 'transparent', stroke: '#14B8A6', strokeWidth: 4,
-                left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center'
-            });
-            canvas.add(triangle);
-        }
-
-        function addArrow() {
-            setTool('edit');
-            const line = new fabric.Line([0, 0, 100, 0], { stroke: '#A855F7', strokeWidth: 4 });
-            const head = new fabric.Triangle({ width: 18, height: 18, fill: '#A855F7', left: 100, top: 0, originX: 'center', originY: 'center', angle: 90 });
-            const arrow = new fabric.Group([line, head], { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' });
-            canvas.add(arrow);
-        }
-
-        function deleteSelected() {
-            const act = canvas.getActiveObjects();
-            if(act.length) { act.forEach(obj => canvas.remove(obj)); canvas.discardActiveObject(); }
-        }
-
-        function clearCanvas() {
-            if(confirm('Apagar apenas as anotações? (O raio-x continuará na tela)')) {
-                canvas.getObjects().forEach(o => canvas.remove(o));
-            }
-        }
-
-        function zoomCanvas(fator) {
-            let zoom = canvas.getZoom() * fator;
-            if (zoom > 10) zoom = 10;
-            if (zoom < 0.1) zoom = 0.1;
-            canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
-        }
-
+        // ESTUDOS
         function carregarEstudos() {
             const grid = document.getElementById('estudo-grid');
             const select = document.getElementById('overlay-selector');
-            
             esquemasAnatomicos.forEach(esq => {
                 grid.innerHTML += `
-                    <div onclick="abrirLightbox('${esq.url}', '${esq.nome}')" 
-                         class="neo-panel p-4 flex flex-col items-center cursor-pointer transition transform hover:scale-105 active:scale-95">
+                    <div onclick="abrirLightbox('${esq.url}', '${esq.nome}')" class="neo-panel p-4 flex flex-col items-center cursor-pointer transition transform hover:scale-105 active:scale-95">
                         <div class="neo-inset w-full h-40 flex items-center justify-center p-2 mb-4 overflow-hidden">
-                            <img src="${esq.url}" onerror="this.src='https://via.placeholder.com/400x300?text=Falta+${esq.url}'" 
-                                 class="w-full h-full object-contain mix-blend-multiply drop-shadow-sm" alt="${esq.nome}">
+                            <img src="${esq.url}" onerror="this.src='https://via.placeholder.com/400x300?text=Falta+${esq.url}'" class="w-full h-full object-contain mix-blend-multiply drop-shadow-sm" alt="${esq.nome}">
                         </div>
                         <h3 class="font-bold text-gray-600 text-sm tracking-wide uppercase">${esq.nome}</h3>
-                    </div>
-                `;
+                    </div>`;
                 select.innerHTML += `<option value="${esq.url}">${esq.nome}</option>`;
             });
         }
 
-        function abrirLightbox(url, nome) {
-            document.getElementById('lightbox-img').src = url;
-            document.getElementById('lightbox-title').innerText = nome;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
+        function abrirLightbox(url, nome) { document.getElementById('lightbox-img').src = url; document.getElementById('lightbox-title').innerText = nome; document.getElementById('lightbox').classList.remove('hidden'); }
+        function fecharLightbox() { document.getElementById('lightbox').classList.add('hidden'); document.getElementById('lightbox-img').src = ''; }
 
-        function fecharLightbox() {
-            document.getElementById('lightbox').classList.add('hidden');
-            document.getElementById('lightbox-img').src = '';
-        }
-
+        // ==========================================
+        // MODAL OVERLAY (LÓGICA IPHONE)
+        // ==========================================
         function mostrarOverlay(url) {
             const overlay = document.getElementById('overlay-schema');
             if (!url) { overlay.classList.add('hidden'); return; }
-            olZoom = 1; olPosX = 0; olPosY = 0;
-            atualizarOverlayTransform();
-            document.getElementById('overlay-img').src = url;
-            overlay.classList.remove('hidden');
+            olZoom = 1; olPosX = 0; olPosY = 0; atualizarOverlayTransform();
+            document.getElementById('overlay-img').src = url; overlay.classList.remove('hidden');
         }
+        function fecharOverlay() { document.getElementById('overlay-schema').classList.add('hidden'); document.getElementById('overlay-selector').value = ""; }
 
-        function fecharOverlay() {
-            document.getElementById('overlay-schema').classList.add('hidden');
-            document.getElementById('overlay-selector').value = "";
-        }
-
+        // Mover Modal
         function configurarDraggableModal() {
             const overlay = document.getElementById('overlay-schema');
             const header = document.getElementById('overlay-header');
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-            header.onmousedown = dragMouseDown;
-            header.ontouchstart = dragMouseDown;
+            header.addEventListener('touchstart', dragStart, {passive: false});
+            header.addEventListener('mousedown', dragStart);
 
-            function dragMouseDown(e) {
+            function dragStart(e) {
                 if(e.target.tagName.toLowerCase() === 'button') return; 
-                e = e || window.event;
-                let touch = e.touches ? e.touches[0] : e;
-                pos3 = touch.clientX; pos4 = touch.clientY;
-                document.onmouseup = closeDragElement;
-                document.ontouchend = closeDragElement;
-                document.onmousemove = elementDrag;
-                document.ontouchmove = elementDrag;
+                e.preventDefault();
+                pos3 = getClientX(e); pos4 = getClientY(e);
+                document.onmouseup = closeDrag; document.ontouchend = closeDrag;
+                document.onmousemove = elementDrag; document.ontouchmove = elementDrag;
             }
 
             function elementDrag(e) {
-                e = e || window.event;
-                let touch = e.touches ? e.touches[0] : e;
-                pos1 = pos3 - touch.clientX; pos2 = pos4 - touch.clientY;
-                pos3 = touch.clientX; pos4 = touch.clientY;
+                e.preventDefault();
+                pos1 = pos3 - getClientX(e); pos2 = pos4 - getClientY(e);
+                pos3 = getClientX(e); pos4 = getClientY(e);
                 overlay.style.top = (overlay.offsetTop - pos2) + "px";
                 overlay.style.left = (overlay.offsetLeft - pos1) + "px";
             }
-
-            function closeDragElement() {
+            function closeDrag() {
                 document.onmouseup = null; document.onmousemove = null;
                 document.ontouchend = null; document.ontouchmove = null;
             }
         }
 
-        function atualizarOverlayTransform() {
-            document.getElementById('overlay-img').style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`;
+        // Redimensionar Modal no Celular
+        function configurarResizeModal() {
+            const overlay = document.getElementById('overlay-schema');
+            const handle = document.getElementById('modal-resize-handle');
+            let startW = 0, startH = 0, startX = 0, startY = 0;
+
+            handle.addEventListener('touchstart', initResize, {passive: false});
+            handle.addEventListener('mousedown', initResize);
+
+            function initResize(e) {
+                e.preventDefault();
+                startW = parseInt(document.defaultView.getComputedStyle(overlay).width, 10);
+                startH = parseInt(document.defaultView.getComputedStyle(overlay).height, 10);
+                startX = getClientX(e); startY = getClientY(e);
+                document.onmousemove = doResize; document.ontouchmove = doResize;
+                document.onmouseup = stopResize; document.ontouchend = stopResize;
+            }
+
+            function doResize(e) {
+                e.preventDefault();
+                overlay.style.width = (startW + getClientX(e) - startX) + 'px';
+                overlay.style.height = (startH + getClientY(e) - startY) + 'px';
+            }
+
+            function stopResize() {
+                document.onmousemove = null; document.ontouchmove = null;
+                document.onmouseup = null; document.ontouchend = null;
+            }
         }
 
-        function zoomOverlayImg(fator) {
-            olZoom *= fator;
-            if (olZoom < 0.2) olZoom = 0.2;
-            if (olZoom > 5) olZoom = 5;
-            atualizarOverlayTransform();
-        }
+        // Pinça e Pan na Imagem do Modal
+        function atualizarOverlayTransform() { document.getElementById('overlay-img').style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`; }
 
         function configurarPanZoomOverlayImage() {
             const olBody = document.getElementById('overlay-body');
+            let isOlDragging = false, olStartX, olStartY;
+            let distInicialOl = null, zoomInicialOl = 1;
             
             olBody.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                if(e.deltaY < 0) zoomOverlayImg(1.1); else zoomOverlayImg(0.9);
+                e.preventDefault(); olZoom *= e.deltaY < 0 ? 1.1 : 0.9;
+                if (olZoom < 0.2) olZoom = 0.2; if (olZoom > 5) olZoom = 5;
+                atualizarOverlayTransform();
             });
 
             const downEvent = (e) => {
-                isOlDragging = true;
-                olBody.style.cursor = 'grabbing';
-                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                olStartX = clientX - olPosX;
-                olStartY = clientY - olPosY;
+                if(e.touches && e.touches.length === 2) {
+                    distInicialOl = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    zoomInicialOl = olZoom;
+                    return;
+                }
+                isOlDragging = true; olBody.style.cursor = 'grabbing';
+                olStartX = getClientX(e) - olPosX; olStartY = getClientY(e) - olPosY;
             };
 
             const moveEvent = (e) => {
+                if(e.touches && e.touches.length === 2 && distInicialOl) {
+                    e.preventDefault(); // Impede scroll do body
+                    let distAtual = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    olZoom = zoomInicialOl * (distAtual / distInicialOl);
+                    if (olZoom < 0.2) olZoom = 0.2; if (olZoom > 5) olZoom = 5;
+                    atualizarOverlayTransform();
+                    return;
+                }
                 if(!isOlDragging) return;
-                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                olPosX = clientX - olStartX;
-                olPosY = clientY - olStartY;
+                e.preventDefault(); // Trava a tela ao dar Pan na imagem
+                olPosX = getClientX(e) - olStartX; olPosY = getClientY(e) - olStartY;
                 atualizarOverlayTransform();
             };
 
-            const upEvent = () => { isOlDragging = false; olBody.style.cursor = 'grab'; };
+            const upEvent = () => { isOlDragging = false; olBody.style.cursor = 'grab'; distInicialOl = null; };
 
-            olBody.addEventListener('mousedown', downEvent);
-            window.addEventListener('mousemove', moveEvent);
-            window.addEventListener('mouseup', upEvent);
-
-            olBody.addEventListener('touchstart', downEvent);
-            window.addEventListener('touchmove', moveEvent);
-            window.addEventListener('touchend', upEvent);
+            olBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent);
+            olBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent);
         }
 
+        // ==========================================
+        // RELATÓRIO PDF E SALVAR
+        // ==========================================
         function saveImage() {
-            canvas.discardActiveObject();
-            canvas.renderAll();
-            
-            const currentZoom = canvas.getZoom();
-            const currentVpt = canvas.viewportTransform.slice();
-            canvas.setZoom(1);
-            canvas.viewportTransform =[1,0,0,1,0,0];
-            
+            canvas.discardActiveObject(); canvas.renderAll();
+            const currentZoom = canvas.getZoom(); const currentVpt = canvas.viewportTransform.slice();
+            canvas.setZoom(1); canvas.viewportTransform =[1,0,0,1,0,0];
             const dataUrl = canvas.toDataURL({ format: 'jpeg', quality: 1.0 });
-            
-            canvas.setViewportTransform(currentVpt);
-            canvas.setZoom(currentZoom);
+            canvas.setViewportTransform(currentVpt); canvas.setZoom(currentZoom);
 
-            imagensSalvas.push(dataUrl);
-            atualizarGaleriaSalvas();
+            imagensSalvas.push(dataUrl); atualizarGaleriaSalvas();
             alert("Sucesso! Anotação inserida no Laudo.");
         }
 
         function atualizarGaleriaSalvas() {
-            const div = document.getElementById('galeria-salvas');
-            div.innerHTML = "";
-            if(imagensSalvas.length === 0) {
-                div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`;
-                return;
-            }
+            const div = document.getElementById('galeria-salvas'); div.innerHTML = "";
+            if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
             imagensSalvas.forEach((img, idx) => {
                 div.innerHTML += `
                     <div class="relative neo-panel p-2 flex items-center justify-center">
                         <img src="${img}" class="w-full h-32 object-cover rounded-xl border border-gray-300">
                         <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded shadow-md">Fig. ${idx+1}</div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
         async function gerarPDF(compartilhar) {
             if(imagensSalvas.length === 0) { alert("Nenhuma imagem para o relatório."); return; }
+            const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
             
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            
-            pdf.setFontSize(22);
-            pdf.setTextColor(59, 130, 246);
-            pdf.text("Laudo Radiográfico", 15, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text(`Data: ${new Date().toLocaleDateString()}`, 15, 30);
+            pdf.setFontSize(22); pdf.setTextColor(59, 130, 246); pdf.text("Laudo Radiográfico", 15, 20);
+            pdf.setFontSize(12); pdf.setTextColor(100, 100, 100); pdf.text(`Data: ${new Date().toLocaleDateString()}`, 15, 30);
             pdf.line(15, 35, pageWidth - 15, 35);
 
             let yOffset = 45;
             for(let i=0; i<imagensSalvas.length; i++) {
                 if (yOffset > 210) { pdf.addPage(); yOffset = 20; }
-                pdf.setFontSize(14);
-                pdf.setFont(undefined, 'bold');
-                pdf.text(`Imagem ${i+1}:`, 15, yOffset);
-                
-                pdf.setDrawColor(200, 200, 200);
-                pdf.rect(15, yOffset + 5, pageWidth - 30, 100);
+                pdf.setFontSize(14); pdf.setFont(undefined, 'bold'); pdf.text(`Imagem ${i+1}:`, 15, yOffset);
+                pdf.setDrawColor(200, 200, 200); pdf.rect(15, yOffset + 5, pageWidth - 30, 100);
                 pdf.addImage(imagensSalvas[i], 'JPEG', 15, yOffset + 5, pageWidth - 30, 100);
-                
                 yOffset += 115;
             }
 
             if (compartilhar) {
                 try {
-                    const pdfBlob = pdf.output('blob');
-                    const file = new File([pdfBlob], "Laudo_Neumorfico.pdf", { type: "application/pdf" });
-                    
+                    const pdfBlob = pdf.output('blob'); const file = new File([pdfBlob], "Laudo_UNIFSA.pdf", { type: "application/pdf" });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files:[file],
-                            title: 'Laudo Neumórfico',
-                            text: 'Segue em anexo o laudo radiográfico.'
-                        });
-                    } else {
-                        alert("Seu aparelho/navegador não suporta envio direto. O PDF será baixado.");
-                        pdf.save("Laudo_Neumorfico.pdf");
-                    }
-                } catch (error) {
-                    console.log("Erro ao compartilhar", error);
-                }
-            } else {
-                pdf.save("Laudo_Neumorfico.pdf");
-            }
+                        await navigator.share({ files:[file], title: 'Laudo RadioOdonto UNIFSA', text: 'Segue o laudo.' });
+                    } else { alert("Seu aparelho não suporta envio direto. O PDF será baixado."); pdf.save("Laudo_UNIFSA.pdf"); }
+                } catch (error) { console.log(error); }
+            } else { pdf.save("Laudo_UNIFSA.pdf"); }
         }
     </script>
 </body>
