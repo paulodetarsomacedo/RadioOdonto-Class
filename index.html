@@ -21,13 +21,15 @@
         .neo-button:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); transform: scale(0.96); }
         .neo-pressed { background: var(--bg-color); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); border-radius: 0.75rem; color: var(--primary-color); font-weight: 600; }
         .neo-inset { background: var(--bg-color); box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light); border-radius: 1rem; }
-        .neo-screen { background: #1f2328; box-shadow: inset 10px 10px 20px #111316, inset -10px -10px 20px #2d333a; border-radius: 1rem; }
+        
+        /* Negatoscópio - Maior Profundidade */
+        .neo-screen { background: #1f2328; box-shadow: inset 10px 10px 20px #111316, inset -10px -10px 20px #2d333a; border-radius: 1rem; border: 1px solid #111316; }
 
         input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
 
-        #canvas-wrapper, .canvas-container { touch-action: none !important; margin: 0 auto; }
+        #canvas-wrapper, .canvas-container { touch-action: none !important; margin: 0 auto; width: 100%; height: 100%; }
         #overlay-body, #modal-resize-handle, #lightbox-body { touch-action: none !important; }
 
         @keyframes loadingBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
@@ -55,103 +57,117 @@
     </div>
 
     <!-- HEADER E NAVEGAÇÃO -->
-    <header class="pt-3 pb-1 flex flex-col gap-2 z-10">
-        <div class="text-center text-lg font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
+    <header class="pt-3 pb-1 flex flex-col gap-2 z-10 lg:pt-4 lg:pb-2">
+        <div class="text-center text-lg lg:text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto UNIFSA
         </div>
-        <nav class="flex justify-around gap-2 px-2 pb-2">
-            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 neo-pressed text-[11px] sm:text-xs flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm"></i>Anatomia</button>
-            <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm"></i>Laudo</button>
-            <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-images text-sm"></i>Relatório</button>
-            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm"></i>Estudo</button>
+        <!-- Responsividade: Navegação com max-width no Desktop -->
+        <nav class="flex justify-around gap-2 px-2 pb-2 lg:max-w-4xl lg:mx-auto w-full">
+            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 lg:py-3 neo-pressed text-[11px] sm:text-sm flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm lg:text-lg"></i>Anatomia</button>
+            <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm lg:text-lg"></i>Laudo</button>
+            <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-images text-sm lg:text-lg"></i>Relatório</button>
+            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm lg:text-lg"></i>Estudo</button>
         </nav>
     </header>
 
-    <main class="flex-1 overflow-y-auto relative px-2 pb-2 flex flex-col">
+    <!-- MAIN CONTAINER - Adicionado padding extra no Desktop (lg) -->
+    <main class="flex-1 overflow-y-auto relative px-2 pb-2 lg:px-6 lg:pb-6 flex flex-col">
         
         <!-- ================= ABA ANATOMIA ================= -->
-        <div id="aba-anatomia" class="flex-1 flex flex-col gap-2 h-full">
-            <div class="neo-panel p-2 flex gap-2 flex-wrap items-center justify-between z-10">
-                <label class="neo-button px-3 py-2 cursor-pointer text-xs flex items-center gap-2 text-blue-600 w-full sm:w-auto justify-center font-bold">
-                    <i class="fa-solid fa-camera"></i> Subir Imagem
-                    <input type="file" id="image-upload" accept="image/*" class="hidden">
-                </label>
-                <div class="flex-1 w-full relative">
-                    <select id="overlay-selector" onchange="mostrarOverlay(this.value)" class="w-full neo-inset p-2 rounded-lg text-xs appearance-none outline-none text-gray-600 bg-transparent font-semibold">
-                        <option value="">+ Esquema de Reparos Anatômicos (Overlay)</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-3 pointer-events-none text-gray-400 text-xs"></i>
-                </div>
-            </div>
-
-            <!-- BARRA DE FERRAMENTAS -->
-            <div class="neo-panel p-2 z-10 flex flex-col gap-2">
-                <div class="grid grid-cols-4 sm:grid-cols-8 gap-1 text-[9px] sm:text-[10px] text-center font-bold">
-                    <button onclick="setTool('edit')" id="btn-edit" class="neo-pressed p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-pointer text-base"></i> Selecionar</button>
-                    <button onclick="setTool('pan')" id="btn-pan" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-blue-500"><i class="fa-solid fa-hand text-base"></i> Mover</button>
-                    <button onclick="setTool('draw')" id="btn-draw" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-red-500"><i class="fa-solid fa-pen text-base"></i> Desenhar</button>
-                    
-                    <div class="neo-button p-1 flex flex-col items-center justify-center">
-                        <div class="w-6 h-6 rounded-full border-2 border-white shadow-inner overflow-hidden relative">
-                            <input type="color" id="color-picker" value="#ffff00" class="absolute -top-2 -left-2 w-10 h-10">
-                        </div>
-                    </div>
-
-                    <button onclick="addText()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-font text-base"></i> Texto</button>
-                    <button onclick="addArrow()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-right-long text-base"></i> Seta</button>
-                    <button onclick="addPolygon()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-play text-base"></i> Área</button>
-                    <button onclick="addLine()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-minus text-base"></i> Linha</button>
-                </div>
-                <div class="grid grid-cols-3 gap-1 text-[10px] font-bold">
-                    <button onclick="editActiveText()" class="neo-button py-1 text-yellow-600"><i class="fa-solid fa-pen-to-square"></i> Editar Texto</button>
-                    <button onclick="deleteSelected()" class="neo-button py-1 text-red-400"><i class="fa-solid fa-eraser"></i> Apagar</button>
-                    <button onclick="clearCanvas()" class="neo-button py-1 text-red-600"><i class="fa-solid fa-trash"></i> Limpar Tudo</button>
-                </div>
-            </div>
-
-            <div id="canvas-wrapper" class="flex-1 min-h-[45vh] neo-screen relative flex justify-center items-center overflow-hidden">
-                <canvas id="fabric-canvas"></canvas>
-            </div>
+        <!-- Responsividade: Lado a Lado (flex-row) no iPad/Desktop -->
+        <div id="aba-anatomia" class="flex-1 flex flex-col lg:flex-row gap-3 h-full">
             
-            <button onclick="saveImage()" class="w-full py-2 neo-button text-blue-600 uppercase tracking-wider text-xs font-bold mt-1"><i class="fa-solid fa-save"></i> Enviar p/ Relatório Base</button>
+            <!-- Barra Lateral Esquerda no Desktop / Topo no Mobile -->
+            <div class="flex flex-col gap-2 lg:w-80 shrink-0">
+                <div class="neo-panel p-2 flex gap-2 flex-col sm:flex-row lg:flex-col items-center justify-between z-10">
+                    <label class="neo-button px-3 py-3 cursor-pointer text-xs lg:text-sm flex items-center gap-2 text-blue-600 w-full justify-center font-bold">
+                        <i class="fa-solid fa-camera text-lg"></i> Subir Imagem
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                    </label>
+                    <div class="w-full relative">
+                        <select id="overlay-selector" onchange="mostrarOverlay(this.value)" class="w-full neo-inset p-3 rounded-lg text-xs lg:text-sm appearance-none outline-none text-gray-600 bg-transparent font-semibold">
+                            <option value="">+ Esquema de Reparos Anatômicos</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 lg:top-4 pointer-events-none text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="neo-panel p-2 lg:p-3 z-10 flex flex-col gap-2">
+                    <div class="grid grid-cols-4 lg:grid-cols-4 gap-1 lg:gap-2 text-[9px] sm:text-[10px] lg:text-xs text-center font-bold">
+                        <button onclick="setTool('edit')" id="btn-edit" class="neo-pressed p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-pointer text-base lg:text-xl"></i> Selecionar</button>
+                        <button onclick="setTool('pan')" id="btn-pan" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-blue-500"><i class="fa-solid fa-hand text-base lg:text-xl"></i> Mover</button>
+                        <button onclick="setTool('draw')" id="btn-draw" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-red-500"><i class="fa-solid fa-pen text-base lg:text-xl"></i> Desenhar</button>
+                        
+                        <div class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center">
+                            <div class="w-6 h-6 lg:w-8 lg:h-8 rounded-full border-2 border-white shadow-inner overflow-hidden relative">
+                                <input type="color" id="color-picker" value="#ffff00" class="absolute -top-2 -left-2 w-10 h-10 lg:w-12 lg:h-12">
+                            </div>
+                        </div>
+
+                        <button onclick="addText()" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-font text-base lg:text-xl"></i> Texto</button>
+                        <button onclick="addArrow()" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-right-long text-base lg:text-xl"></i> Seta</button>
+                        <button onclick="addPolygon()" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-play text-base lg:text-xl"></i> Área</button>
+                        <button onclick="addLine()" class="neo-button p-1 lg:p-2 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-minus text-base lg:text-xl"></i> Linha</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 lg:gap-2 text-[10px] lg:text-xs font-bold mt-1">
+                        <button onclick="editActiveText()" class="neo-button py-2 lg:py-3 text-yellow-600"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                        <button onclick="deleteSelected()" class="neo-button py-2 lg:py-3 text-red-400"><i class="fa-solid fa-eraser"></i> Apagar</button>
+                        <button onclick="clearCanvas()" class="neo-button py-2 lg:py-3 text-red-600"><i class="fa-solid fa-trash"></i> Limpar</button>
+                    </div>
+                </div>
+
+                <!-- Botão de salvar no Desktop (Oculto no celular) -->
+                <button onclick="saveImage()" class="hidden lg:block mt-auto w-full py-4 neo-button text-blue-600 uppercase tracking-wider text-sm font-extrabold"><i class="fa-solid fa-save"></i> Enviar p/ Relatório</button>
+            </div>
+
+            <!-- CANVAS WIDE -->
+            <div class="flex-1 flex flex-col w-full h-full relative min-h-[50vh]">
+                <div id="canvas-wrapper" class="w-full h-full neo-screen relative flex justify-center items-center overflow-hidden">
+                    <canvas id="fabric-canvas"></canvas>
+                </div>
+                <!-- Botão de salvar no Celular (Abaixo do canvas) -->
+                <button onclick="saveImage()" class="lg:hidden w-full py-3 neo-button text-blue-600 uppercase tracking-wider text-xs font-bold mt-2"><i class="fa-solid fa-save"></i> Enviar p/ Relatório Base</button>
+            </div>
         </div>
 
-        <!-- ================= ABA LAUDO (GERADOR PDF AVANÇADO) ================= -->
-        <div id="aba-laudo" class="hidden h-full flex-col gap-2">
+        <!-- ================= ABA LAUDO ================= -->
+        <div id="aba-laudo" class="hidden h-full flex-col lg:flex-row gap-4">
             
-            <div class="h-[30vh] w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
-                <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Desenhe+na+aba+Anatomia">
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] px-2 py-1 rounded">Visualização do Laudo</div>
+            <!-- Esquerda no iPad/Desktop -->
+            <div class="flex flex-col gap-3 lg:w-5/12 xl:w-1/3">
+                <div class="h-[35vh] lg:h-[45vh] lg:flex-1 w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
+                    <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Desenhe+na+aba+Anatomia">
+                    <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] lg:text-xs px-2 py-1 rounded">Visualização do Laudo</div>
+                </div>
+
+                <div class="neo-panel p-4 flex flex-col gap-3">
+                    <input type="text" id="laudo-paciente" placeholder="Nome do Paciente..." class="neo-inset p-3 rounded-lg text-sm lg:text-base text-gray-700 w-full font-bold">
+                    <select id="laudo-tipo-rx" class="neo-inset p-3 rounded-lg text-sm lg:text-base font-bold text-blue-600 bg-transparent w-full">
+                        <option value="">Selecione o tipo de radiografia...</option>
+                        <option value="Periapical">Radiografia Periapical</option>
+                        <option value="Interproximal">Radiografia Interproximal (Bite-Wing)</option>
+                        <option value="Oclusal">Radiografia Oclusal</option>
+                        <option value="Panorâmica">Radiografia Panorâmica</option>
+                        <option value="Extrabucal">Radiografia Extrabucal</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Meta Dados -->
-            <div class="neo-panel p-3 flex flex-col gap-2">
-                <input type="text" id="laudo-paciente" placeholder="Nome do Paciente..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
-                <select id="laudo-tipo-rx" class="neo-inset p-2 rounded-lg text-sm font-bold text-blue-600 bg-transparent w-full">
-                    <option value="">Selecione o tipo de radiografia...</option>
-                    <option value="Periapical">Radiografia Periapical</option>
-                    <option value="Interproximal">Radiografia Interproximal (Bite-Wing)</option>
-                    <option value="Oclusal">Radiografia Oclusal</option>
-                    <option value="Panorâmica">Radiografia Panorâmica</option>
-                    <option value="Extrabucal">Radiografia Extrabucal</option>
-                </select>
-            </div>
-
-            <!-- Editor e Achados -->
-            <div class="flex-1 flex flex-col gap-2 relative">
-                <div class="text-xs font-bold text-gray-500 px-2 mt-1 flex justify-between">
+            <!-- Direita no iPad/Desktop -->
+            <div class="flex-1 flex flex-col gap-3 relative h-full">
+                <div class="text-xs lg:text-sm font-bold text-gray-500 px-2 flex justify-between">
                     <span><i class="fa-solid fa-list-check"></i> Achados Radiográficos (Editor):</span>
                 </div>
-                <textarea id="laudo-editor" class="flex-1 neo-inset p-3 rounded-xl text-sm text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Use o botão 'Inserir Achado' abaixo ou digite os achados aqui..."></textarea>
                 
-                <button onclick="abrirModalAchados()" class="w-full neo-button py-2 text-blue-600 font-extrabold text-sm"><i class="fa-solid fa-plus-circle"></i> Inserir Achado</button>
+                <textarea id="laudo-editor" class="flex-1 neo-inset p-4 rounded-xl text-sm lg:text-base text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Use o botão 'Inserir Achado' abaixo ou digite os achados aqui..."></textarea>
                 
-                <div class="neo-panel p-2 flex flex-col gap-2 mt-1">
-                    <input type="text" id="laudo-nome-aluno" placeholder="Assinatura Acadêmico(a)..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
+                <button onclick="abrirModalAchados()" class="w-full neo-button py-3 lg:py-4 text-blue-600 font-extrabold text-sm lg:text-base"><i class="fa-solid fa-plus-circle"></i> Inserir Achado Rápido</button>
+                
+                <div class="neo-panel p-3 lg:p-4 flex flex-col gap-3">
+                    <input type="text" id="laudo-nome-aluno" placeholder="Assinatura Acadêmico(a)..." class="neo-inset p-3 rounded-lg text-sm lg:text-base text-gray-700 w-full font-bold">
                     <div class="flex gap-2">
-                        <!-- Corrigido: Agora ambas as funções passam os parâmetros corretamente! -->
-                        <button onclick="gerarPDFLaudo(false)" class="flex-1 neo-pressed py-3 text-red-500 font-extrabold text-sm"><i class="fa-solid fa-file-pdf"></i> Baixar Laudo</button>
-                        <button onclick="gerarPDFLaudo(true)" class="flex-1 neo-pressed py-3 text-green-500 font-extrabold text-sm"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
+                        <button onclick="gerarPDFLaudo(false)" class="flex-1 neo-pressed py-3 lg:py-4 text-red-500 font-extrabold text-sm lg:text-base"><i class="fa-solid fa-file-pdf"></i> Baixar Laudo</button>
+                        <button onclick="gerarPDFLaudo(true)" class="flex-1 neo-pressed py-3 lg:py-4 text-green-500 font-extrabold text-sm lg:text-base"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
                     </div>
                 </div>
             </div>
@@ -159,39 +175,39 @@
 
         <!-- ================= ABA RELATÓRIO ================= -->
         <div id="aba-relatorio" class="hidden h-full flex-col gap-3">
-            <h2 class="text-lg font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Base Salvas</h2>
-            <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
-                <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>
+            <h2 class="text-lg lg:text-xl font-extrabold text-center text-gray-500 uppercase tracking-widest mt-2">Imagens Base Salvas</h2>
+            <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 content-start">
+                <p class="text-gray-400 col-span-full text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>
             </div>
-            <div class="neo-panel p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onclick="gerarPDFRelatorio(false)" class="w-full py-3 neo-button text-red-500 text-sm font-bold"><i class="fa-solid fa-file-pdf"></i> Baixar (PDF)</button>
-                <button onclick="gerarPDFRelatorio(true)" class="w-full py-3 neo-button text-green-500 text-sm font-bold"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
+            <div class="neo-panel p-4 grid grid-cols-1 sm:grid-cols-2 lg:max-w-4xl lg:mx-auto w-full gap-3">
+                <button onclick="gerarPDFRelatorio(false)" class="w-full py-4 neo-button text-red-500 text-sm lg:text-base font-bold"><i class="fa-solid fa-file-pdf"></i> Baixar (PDF)</button>
+                <button onclick="gerarPDFRelatorio(true)" class="w-full py-4 neo-button text-green-500 text-sm lg:text-base font-bold"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
             </div>
         </div>
 
         <!-- ================= ABA ESTUDO (Avançada) ================= -->
-        <div id="aba-estudo" class="hidden h-full flex-col gap-2">
-            <h2 class="text-lg font-extrabold mb-1 text-center text-gray-500 uppercase tracking-widest mt-2">Reparos Anatômicos</h2>
-            <div class="flex justify-center gap-2 mb-2">
-                <button onclick="filtrarEstudos('todos')" id="btn-filtro-todos" class="neo-pressed px-4 py-1 text-xs font-bold text-blue-600">Todos</button>
-                <button onclick="filtrarEstudos('maxila')" id="btn-filtro-maxila" class="neo-button px-4 py-1 text-xs font-bold text-gray-600">Maxila</button>
-                <button onclick="filtrarEstudos('mandibula')" id="btn-filtro-mandibula" class="neo-button px-4 py-1 text-xs font-bold text-gray-600">Mandíbula</button>
+        <div id="aba-estudo" class="hidden h-full flex-col gap-3">
+            <h2 class="text-lg lg:text-xl font-extrabold mb-1 text-center text-gray-500 uppercase tracking-widest mt-2">Reparos Anatômicos</h2>
+            <div class="flex justify-center gap-3 mb-2">
+                <button onclick="filtrarEstudos('todos')" id="btn-filtro-todos" class="neo-pressed px-5 py-2 text-xs lg:text-sm font-bold text-blue-600">Todos</button>
+                <button onclick="filtrarEstudos('maxila')" id="btn-filtro-maxila" class="neo-button px-5 py-2 text-xs lg:text-sm font-bold text-gray-600">Maxila</button>
+                <button onclick="filtrarEstudos('mandibula')" id="btn-filtro-mandibula" class="neo-button px-5 py-2 text-xs lg:text-sm font-bold text-gray-600">Mandíbula</button>
             </div>
-            <div id="estudo-grid" class="neo-inset flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 p-4 content-start"></div>
+            <div id="estudo-grid" class="neo-inset flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 p-4 content-start"></div>
         </div>
     </main>
 
     <!-- ================= MODAL INSERIR ACHADO (HIERÁRQUICO) ================= -->
-    <div id="modal-achados" class="hidden fixed inset-0 z-[105] bg-[#e0e5ec] bg-opacity-95 flex flex-col justify-end p-2 transition-opacity">
-        <div class="neo-panel w-full max-h-[85vh] rounded-t-3xl rounded-b-xl flex flex-col overflow-hidden border border-white">
-            <div class="p-4 bg-gray-100 border-b flex justify-between items-center rounded-t-3xl">
-                <h3 class="font-extrabold text-gray-600 text-base uppercase tracking-wider"><i class="fa-solid fa-stethoscope text-blue-500"></i> Construtor de Achados</h3>
-                <button onclick="fecharModalAchados()" class="text-red-500 text-2xl font-bold px-2">&times;</button>
+    <div id="modal-achados" class="hidden fixed inset-0 z-[105] bg-[#e0e5ec] bg-opacity-95 flex flex-col justify-center lg:items-center p-2 lg:p-6 transition-opacity">
+        <div class="neo-panel w-full lg:w-[600px] max-h-[85vh] rounded-3xl flex flex-col overflow-hidden border border-white shadow-2xl">
+            <div class="p-5 bg-gray-100 border-b flex justify-between items-center rounded-t-3xl">
+                <h3 class="font-extrabold text-gray-600 text-base lg:text-lg uppercase tracking-wider"><i class="fa-solid fa-stethoscope text-blue-500"></i> Construtor de Achados</h3>
+                <button onclick="fecharModalAchados()" class="text-red-500 text-3xl font-bold px-2 hover:scale-110 transition">&times;</button>
             </div>
-            <div class="p-4 flex-1 overflow-y-auto flex flex-col gap-4">
+            <div class="p-5 flex-1 overflow-y-auto flex flex-col gap-5">
                 <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">Categoria do Achado</label>
-                    <select id="achado-categoria" onchange="renderizarCamposAchado()" class="neo-inset w-full p-3 rounded-lg text-sm font-bold text-blue-600 bg-transparent outline-none">
+                    <label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Categoria do Achado</label>
+                    <select id="achado-categoria" onchange="renderizarCamposAchado()" class="neo-inset w-full p-4 rounded-lg text-sm lg:text-base font-bold text-blue-600 bg-transparent outline-none">
                         <option value="">Selecione uma categoria...</option>
                         <option value="dente">1. Dente (Criar Tópico Principal)</option>
                         <option value="carie">2. Lesão Cariosa</option>
@@ -201,43 +217,43 @@
                         <option value="anomalia">6. Anomalias Dentárias</option>
                     </select>
                 </div>
-                <div id="achado-campos" class="flex flex-col gap-3 min-h-[200px]">
-                    <p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>
+                <div id="achado-campos" class="flex flex-col gap-4 min-h-[200px]">
+                    <p class="text-gray-400 text-sm italic text-center mt-10">Selecione uma categoria acima.</p>
                 </div>
             </div>
-            <div class="p-3 bg-gray-50 border-t rounded-b-xl">
-                <button onclick="inserirTextoAchado()" class="w-full neo-pressed py-3 text-blue-600 font-extrabold text-sm"><i class="fa-solid fa-check"></i> Adicionar ao Laudo</button>
+            <div class="p-4 bg-gray-50 border-t rounded-b-3xl">
+                <button onclick="inserirTextoAchado()" class="w-full neo-pressed py-4 text-blue-600 font-extrabold text-base lg:text-lg"><i class="fa-solid fa-check"></i> Adicionar ao Laudo</button>
             </div>
         </div>
     </div>
 
     <!-- ================= OVERLAY MODAL (ARRASTAR) ================= -->
-    <div id="overlay-schema" class="hidden absolute top-48 left-6 neo-panel z-50 flex flex-col bg-[#e0e5ec] overflow-hidden" style="width: 200px; height: 200px; min-width: 120px; min-height: 120px; max-width: 95vw; max-height: 80vh;">
-        <div id="overlay-header" class="px-2 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
-            <span class="font-bold text-[10px] text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
-            <button onclick="fecharOverlay()" class="neo-button w-6 h-6 flex items-center justify-center text-xs text-red-500 pointer-events-auto">X</button>
+    <div id="overlay-schema" class="hidden absolute top-48 left-6 neo-panel z-50 flex flex-col bg-[#e0e5ec] overflow-hidden" style="width: 250px; height: 250px; min-width: 150px; min-height: 150px; max-width: 95vw; max-height: 80vh;">
+        <div id="overlay-header" class="px-3 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
+            <span class="font-bold text-[10px] lg:text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
+            <button onclick="fecharOverlay()" class="neo-button w-8 h-8 flex items-center justify-center text-sm text-red-500 pointer-events-auto">X</button>
         </div>
-        <div id="overlay-body" class="flex-1 neo-inset m-1 relative cursor-grab flex items-center justify-center overflow-hidden bg-white">
+        <div id="overlay-body" class="flex-1 neo-inset m-2 relative cursor-grab flex items-center justify-center overflow-hidden bg-white rounded-lg">
             <img id="overlay-img" src="" class="max-w-none max-h-none origin-center pointer-events-none mix-blend-multiply" style="transform: translate(0px, 0px) scale(1);" />
         </div>
-        <div id="modal-resize-handle" class="absolute bottom-0 right-0 w-8 h-8 flex items-end justify-end p-2 cursor-se-resize bg-transparent z-10">
-            <i class="fa-solid fa-signal fa-flip-horizontal text-gray-400 text-[10px] opacity-70"></i>
+        <div id="modal-resize-handle" class="absolute bottom-0 right-0 w-10 h-10 flex items-end justify-end p-2 cursor-se-resize bg-transparent z-10">
+            <i class="fa-solid fa-signal fa-flip-horizontal text-gray-400 text-[12px] opacity-70"></i>
         </div>
     </div>
 
     <!-- ================= LIGHTBOX (ESTUDO AVANÇADO) ================= -->
-    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-start items-center p-2 pt-10 transition-opacity">
-        <button onclick="fecharLightbox()" class="absolute top-4 right-4 neo-button w-10 h-10 text-xl text-red-500 font-bold z-10">&times;</button>
-        <h3 id="lightbox-title" class="text-gray-600 text-lg mb-4 font-extrabold uppercase tracking-widest drop-shadow-sm text-center"></h3>
+    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-start items-center p-4 lg:p-10 transition-opacity overflow-hidden">
+        <button onclick="fecharLightbox()" class="absolute top-6 right-6 neo-button w-14 h-14 text-3xl text-red-500 font-bold z-10">&times;</button>
+        <h3 id="lightbox-title" class="text-gray-600 text-xl lg:text-3xl mb-6 font-extrabold uppercase tracking-widest drop-shadow-sm text-center"></h3>
         
-        <div id="lightbox-body" class="neo-panel p-2 w-full max-w-full h-[50vh] relative overflow-hidden flex items-center justify-center cursor-grab bg-white rounded-xl">
+        <div id="lightbox-body" class="neo-panel p-3 w-full max-w-5xl h-[50vh] lg:h-[60vh] relative overflow-hidden flex items-center justify-center cursor-grab bg-white rounded-2xl">
             <img id="lightbox-img" src="" class="max-w-none max-h-none origin-center pointer-events-none mix-blend-multiply" style="transform: translate(0px, 0px) scale(1);">
-            <div class="absolute bottom-1 right-1 text-[9px] text-gray-400 font-bold bg-white px-1 rounded shadow opacity-70">Use 2 dedos (Pinça) para Zoom</div>
+            <div class="absolute bottom-2 right-2 text-[10px] lg:text-xs text-gray-400 font-bold bg-white px-2 py-1 rounded shadow opacity-80 border">Use 2 dedos p/ Zoom</div>
         </div>
 
-        <div class="w-full mt-4 flex flex-col gap-2 flex-1">
-            <label class="text-xs font-bold text-gray-500 uppercase px-2"><i class="fa-solid fa-book-open text-blue-500"></i> Minhas Anotações de Estudo</label>
-            <textarea id="lightbox-notes" onkeyup="salvarAnotacao()" class="flex-1 neo-inset p-3 rounded-xl text-sm text-gray-700 outline-none resize-none" placeholder="Digite seus resumos ou macetes aqui. Ficará salvo automaticamente no seu celular para estudos futuros!"></textarea>
+        <div class="w-full max-w-5xl mt-6 flex flex-col gap-3 flex-1 pb-4">
+            <label class="text-sm lg:text-base font-bold text-gray-500 uppercase px-2"><i class="fa-solid fa-book-open text-blue-500"></i> Minhas Anotações de Estudo</label>
+            <textarea id="lightbox-notes" onkeyup="salvarAnotacao()" class="flex-1 neo-inset p-4 rounded-2xl text-sm lg:text-base text-gray-700 outline-none resize-none font-medium" placeholder="Digite seus resumos ou macetes aqui. Ficará salvo automaticamente no seu dispositivo!"></textarea>
         </div>
     </div>
 
@@ -278,10 +294,14 @@
 
         function mudarAba(aba) {['anatomia', 'laudo', 'relatorio', 'estudo'].forEach(a => {
                 document.getElementById(`aba-${a}`).classList.add('hidden'); document.getElementById(`aba-${a}`).classList.remove('flex');
-                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 text-[11px] sm:text-xs flex flex-col items-center gap-1 neo-button transition text-gray-600";
+                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-button transition text-gray-600";
             });
-            const current = document.getElementById(`aba-${aba}`); current.classList.remove('hidden'); current.classList.add('flex');
-            document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-2 text-[11px] sm:text-xs flex flex-col items-center gap-1 neo-pressed transition text-blue-500";
+            const current = document.getElementById(`aba-${aba}`); 
+            current.classList.remove('hidden'); 
+            current.classList.add(aba === 'anatomia' || aba === 'laudo' ? (window.innerWidth >= 1024 ? 'flex' : 'flex') : 'flex');
+            
+            document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-pressed transition text-blue-500";
+            
             if(aba === 'anatomia' && canvas) canvas.calcOffset();
             if(aba === 'laudo') syncLaudoImage(); 
         }
@@ -298,7 +318,16 @@
             canvas.on('mouse:move', function(opt) { if (this.isDragging && isPanning) { var vpt = this.viewportTransform; vpt[4] += getClientX(opt.e) - this.lastPosX; vpt[5] += getClientY(opt.e) - this.lastPosY; this.requestRenderAll(); this.lastPosX = getClientX(opt.e); this.lastPosY = getClientY(opt.e); } });
             canvas.on('mouse:up', function() { this.isDragging = false; });
             canvas.on('mouse:wheel', function(opt) { var zoom = canvas.getZoom() * (0.999 ** opt.e.deltaY); if (zoom > 10) zoom = 10; if (zoom < 0.1) zoom = 0.1; canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom); opt.e.preventDefault(); opt.e.stopPropagation(); });
-            window.addEventListener('resize', () => { canvas.setWidth(wrapper.clientWidth); canvas.setHeight(wrapper.clientHeight); });
+            
+            // REDIMENSIONAMENTO INTELIGENTE (RESIZEOBSERVER) P/ IPAD/DESKTOP
+            const resizeObserver = new ResizeObserver(() => {
+                if (canvas && wrapper.clientWidth > 0 && wrapper.clientHeight > 0) {
+                    canvas.setWidth(wrapper.clientWidth);
+                    canvas.setHeight(wrapper.clientHeight);
+                    canvas.calcOffset(); canvas.renderAll();
+                }
+            });
+            resizeObserver.observe(wrapper);
         }
 
         function configurarZoomPinçaCanvas() {
@@ -315,7 +344,9 @@
                     img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
                     canvas.setViewportTransform([1, 0, 0, 1, 0, 0]); canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                     imgLaudoSource = f.target.result; syncLaudoImage();
-                    document.getElementById('canvas-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Rolar pro canvas em telas menores
+                    if(window.innerWidth < 1024) document.getElementById('canvas-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             };
             reader.readAsDataURL(file);
@@ -329,7 +360,7 @@
         }
 
         function addText() { setTool('edit'); const userText = prompt("Digite o texto:"); if(!userText || userText.trim() === "") return; const cor = document.getElementById('color-picker').value; const text = new fabric.Text(userText, { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center', fontFamily: 'Arial', fill: cor, fontSize: 24, fontWeight: 'bold' }); canvas.add(text); canvas.setActiveObject(text); }
-        function editActiveText() { const act = canvas.getActiveObject(); if(act && act.type === 'text') { const userText = prompt("Alterar texto:", act.text); if(userText) { act.set('text', userText); canvas.renderAll(); } } else { alert("Toque em um texto existente primeiro."); } }
+        function editActiveText() { const act = canvas.getActiveObject(); if(act && act.type === 'text') { const userText = prompt("Alterar texto:", act.text); if(userText) { act.set('text', userText); canvas.renderAll(); } } else { alert("Selecione um texto existente."); } }
         function addLine() { setTool('edit'); const cor = document.getElementById('color-picker').value; const line = new fabric.Line([50, 50, 200, 50], { stroke: cor, strokeWidth: 4, selectable: true, hasControls: true, hasBorders: true, left: canvas.width / 2 - 75, top: canvas.height / 2 }); canvas.add(line); }
         function addPolygon() { setTool('edit'); const cor = document.getElementById('color-picker').value; const triangle = new fabric.Triangle({ width: 100, height: 100, fill: 'transparent', stroke: cor, strokeWidth: 4, left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' }); canvas.add(triangle); }
         function addArrow() { setTool('edit'); const cor = document.getElementById('color-picker').value; const line = new fabric.Line([0, 0, 100, 0], { stroke: cor, strokeWidth: 4 }); const head = new fabric.Triangle({ width: 18, height: 18, fill: cor, left: 100, top: 0, originX: 'center', originY: 'center', angle: 90 }); const arrow = new fabric.Group([line, head], { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' }); canvas.add(arrow); }
@@ -351,7 +382,7 @@
             const grid = document.getElementById('estudo-grid'); grid.innerHTML = "";
             const select = document.getElementById('overlay-selector'); 
             if(select.options.length <= 1) { esquemasAnatomicos.forEach(esq => { select.innerHTML += `<option value="${esq.url}">${esq.nome}</option>`; }); }
-            lista.forEach(esq => { grid.innerHTML += `<div onclick="abrirLightbox('${esq.id}','${esq.url}', '${esq.nome}')" class="neo-panel p-2 flex flex-col items-center cursor-pointer transition transform hover:scale-105 bg-white"><div class="w-full h-24 flex items-center justify-center p-1 mb-2"><img src="${esq.url}" onerror="this.src='https://via.placeholder.com/300x200?text=${esq.nome}'" class="w-full h-full object-contain mix-blend-multiply"></div><h3 class="font-bold text-gray-500 text-[10px] tracking-wide uppercase text-center">${esq.nome}</h3></div>`; });
+            lista.forEach(esq => { grid.innerHTML += `<div onclick="abrirLightbox('${esq.id}','${esq.url}', '${esq.nome}')" class="neo-panel p-3 lg:p-4 flex flex-col items-center cursor-pointer transition transform hover:scale-105 bg-white"><div class="w-full h-32 lg:h-40 flex items-center justify-center p-1 mb-2"><img src="${esq.url}" onerror="this.src='https://via.placeholder.com/300x200?text=${esq.nome}'" class="w-full h-full object-contain mix-blend-multiply"></div><h3 class="font-bold text-gray-500 text-xs lg:text-sm tracking-wide uppercase text-center">${esq.nome}</h3></div>`; });
         }
         function filtrarEstudos(cat) {['todos', 'maxila', 'mandibula'].forEach(c => { let btn = document.getElementById(`btn-filtro-${c}`); btn.classList.replace('neo-pressed', 'neo-button'); btn.classList.remove('text-blue-600'); btn.classList.add('text-gray-600'); }); let btnAtivo = document.getElementById(`btn-filtro-${cat}`); btnAtivo.classList.replace('neo-button', 'neo-pressed'); btnAtivo.classList.replace('text-gray-600', 'text-blue-600'); if(cat === 'todos') renderizarEstudos(esquemasAnatomicos); else renderizarEstudos(esquemasAnatomicos.filter(e => e.cat === cat)); }
 
@@ -390,17 +421,17 @@
 
         function renderizarCamposAchado() {
             const cat = document.getElementById('achado-categoria').value; const container = document.getElementById('achado-campos'); 
-            if(!cat) { container.innerHTML = `<p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>`; return; }
+            if(!cat) { container.innerHTML = `<p class="text-gray-400 text-sm italic text-center mt-10">Selecione uma categoria acima.</p>`; return; }
             
-            let htmlBase = `<label class="text-xs font-bold text-gray-500 uppercase">Dente / Região Associada</label><input type="text" id="ach-dente-geral" placeholder="Ex: 11, 36, Maxila..." class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">`;
+            let htmlBase = `<label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Dente / Região Associada</label><input type="text" id="ach-dente-geral" placeholder="Ex: 11, 36, Maxila..." class="neo-inset p-4 rounded-lg text-sm lg:text-base text-gray-700 w-full outline-none mb-4">`;
             let htmlExtra = '';
 
-            if (cat === 'dente') { htmlExtra = `<p class="text-xs text-gray-400 italic font-bold">Isso criará o título do dente no laudo. Os próximos achados associados a ele ficarão indentados abaixo.</p>`; } 
-            else if (cat === 'carie') { htmlExtra = `<label class="text-xs font-bold text-gray-500 uppercase">Faces Envolvidas</label><div class="flex gap-3 mb-2"><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Mesial (M)" class="neo-checkbox ach-face"> M</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Distal (D)" class="neo-checkbox ach-face"> D</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Oclusal (O)" class="neo-checkbox ach-face"> O</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Vestibular (V)" class="neo-checkbox ach-face"> V</label><label class="flex items-center gap-1 text-sm font-bold"><input type="checkbox" value="Lingual (L)" class="neo-checkbox ach-face"> L</label></div><label class="text-xs font-bold text-gray-500 uppercase mt-2">Comprometimento</label><select id="ach-profundidade" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none"><option value="esmalte">Apenas Esmalte</option><option value="dentina">Esmalte e Dentina</option><option value="câmara pulpar">Atingindo câmara pulpar</option></select><div class="flex flex-col gap-2 mt-3"><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-restauracao" class="neo-checkbox"> Material restaurador radiopaco associado</label><label class="flex items-center gap-2 text-sm font-bold text-red-500"><input type="checkbox" id="ach-pulpar" class="neo-checkbox"> Comprometimento pulpar</label></div>`; } 
-            else if (cat === 'raiz') { htmlExtra = `<p class="text-xs text-gray-400 italic">Insira acima a região do dente residual.</p>`; } 
-            else if (cat === 'periapical') { htmlExtra = `<label class="text-xs font-bold text-gray-500 uppercase">Limites da Lesão</label><select id="ach-peri-limites" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none"><option value="DEFINIDOS">DEFINIDOS</option><option value="INDEFINIDOS">INDEFINIDOS</option><option value="ESCLERÓTICOS">ESCLERÓTICOS</option><option value="NÃO ESCLERÓTICOS">NÃO ESCLERÓTICOS</option></select>`; } 
-            else if (cat === 'periodontal') { htmlExtra = `<label class="text-xs font-bold text-gray-500 uppercase">Extensão da Perda (Terço Radicular)</label><select id="ach-perda-terco" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3"><option value="terço cervical da raiz">Terço cervical</option><option value="terço médio da raiz">Terço médio</option><option value="terço apical da raiz">Terço apical</option></select><div class="flex flex-col gap-2"><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-vertical" class="neo-checkbox"> Perda óssea vertical na região</label><label class="flex items-center gap-2 text-sm font-bold text-gray-600"><input type="checkbox" id="ach-perda-esfumacamento" class="neo-checkbox"> Esfumaçamento da crista óssea alveolar</label></div>`; } 
-            else if (cat === 'anomalia') { htmlExtra = `<label class="text-xs font-bold text-gray-500 uppercase">Selecione a Anomalia</label><select id="ach-anomalia-tipo" class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3"><option value="Microdontia">Microdontia</option><option value="Macrodontia">Macrodontia</option><option value="Taurodontismo">Taurodontismo</option><option value="Dilaceração Radicular">Dilaceração Radicular</option><option value="Dens in dente">Dens in dente</option><option value="Amelogênese Imperfeita">Amelogênese Imperfeita</option><option value="Odontoma">Odontoma</option><option value="Dente Supranumerário">Dente Supranumerário</option><option value="Agenesia">Agenesia</option></select>`; } 
+            if (cat === 'dente') { htmlExtra = `<p class="text-xs lg:text-sm text-gray-400 italic font-bold">Isso criará o título do dente no laudo. Os próximos achados associados a ele ficarão indentados abaixo.</p>`; } 
+            else if (cat === 'carie') { htmlExtra = `<label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Faces Envolvidas</label><div class="flex gap-4 mb-4 flex-wrap"><label class="flex items-center gap-2 text-sm lg:text-base font-bold"><input type="checkbox" value="Mesial (M)" class="neo-checkbox ach-face"> M</label><label class="flex items-center gap-2 text-sm lg:text-base font-bold"><input type="checkbox" value="Distal (D)" class="neo-checkbox ach-face"> D</label><label class="flex items-center gap-2 text-sm lg:text-base font-bold"><input type="checkbox" value="Oclusal (O)" class="neo-checkbox ach-face"> O</label><label class="flex items-center gap-2 text-sm lg:text-base font-bold"><input type="checkbox" value="Vestibular (V)" class="neo-checkbox ach-face"> V</label><label class="flex items-center gap-2 text-sm lg:text-base font-bold"><input type="checkbox" value="Lingual (L)" class="neo-checkbox ach-face"> L</label></div><label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block mt-2">Comprometimento</label><select id="ach-profundidade" class="neo-inset p-4 rounded-lg text-sm lg:text-base text-gray-700 w-full outline-none"><option value="esmalte">Apenas Esmalte</option><option value="dentina">Esmalte e Dentina</option><option value="câmara pulpar">Atingindo câmara pulpar</option></select><div class="flex flex-col gap-3 mt-4"><label class="flex items-center gap-3 text-sm lg:text-base font-bold text-gray-600"><input type="checkbox" id="ach-restauracao" class="neo-checkbox"> Material restaurador radiopaco associado</label><label class="flex items-center gap-3 text-sm lg:text-base font-bold text-red-500"><input type="checkbox" id="ach-pulpar" class="neo-checkbox"> Comprometimento pulpar</label></div>`; } 
+            else if (cat === 'raiz') { htmlExtra = `<p class="text-xs lg:text-sm text-gray-400 italic">Insira acima a região do dente residual.</p>`; } 
+            else if (cat === 'periapical') { htmlExtra = `<label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Limites da Lesão</label><select id="ach-peri-limites" class="neo-inset p-4 rounded-lg text-sm lg:text-base text-gray-700 w-full outline-none"><option value="DEFINIDOS">DEFINIDOS</option><option value="INDEFINIDOS">INDEFINIDOS</option><option value="ESCLERÓTICOS">ESCLERÓTICOS</option><option value="NÃO ESCLERÓTICOS">NÃO ESCLERÓTICOS</option></select>`; } 
+            else if (cat === 'periodontal') { htmlExtra = `<label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Extensão da Perda (Terço Radicular)</label><select id="ach-perda-terco" class="neo-inset p-4 rounded-lg text-sm lg:text-base text-gray-700 w-full outline-none mb-4"><option value="terço cervical da raiz">Terço cervical</option><option value="terço médio da raiz">Terço médio</option><option value="terço apical da raiz">Terço apical</option></select><div class="flex flex-col gap-3"><label class="flex items-center gap-3 text-sm lg:text-base font-bold text-gray-600"><input type="checkbox" id="ach-perda-vertical" class="neo-checkbox"> Perda óssea vertical na região</label><label class="flex items-center gap-3 text-sm lg:text-base font-bold text-gray-600"><input type="checkbox" id="ach-perda-esfumacamento" class="neo-checkbox"> Esfumaçamento da crista óssea alveolar</label></div>`; } 
+            else if (cat === 'anomalia') { htmlExtra = `<label class="text-xs lg:text-sm font-bold text-gray-500 uppercase mb-2 block">Selecione a Anomalia</label><select id="ach-anomalia-tipo" class="neo-inset p-4 rounded-lg text-sm lg:text-base text-gray-700 w-full outline-none mb-4"><option value="Microdontia">Microdontia</option><option value="Macrodontia">Macrodontia</option><option value="Taurodontismo">Taurodontismo</option><option value="Dilaceração Radicular">Dilaceração Radicular</option><option value="Dens in dente">Dens in dente</option><option value="Amelogênese Imperfeita">Amelogênese Imperfeita</option><option value="Odontoma">Odontoma</option><option value="Dente Supranumerário">Dente Supranumerário</option><option value="Agenesia">Agenesia</option></select>`; } 
             
             container.innerHTML = htmlBase + htmlExtra;
         }
@@ -445,7 +476,7 @@
             fecharModalAchados();
         }
 
-        // ================= GERADOR DE PDF (LAUDO CORRIGIDO) =================
+        // ================= GERADOR DE PDF PADRÃO OURO (LAUDO) =================
         async function gerarPDFLaudo(compartilhar = false) {
             const textoLaudo = document.getElementById('laudo-editor').value;
             if(!textoLaudo.trim()) { alert("O laudo está vazio! Digite os achados."); return; }
@@ -456,7 +487,6 @@
 
             const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
             
-            // Cabeçalho Profissional
             pdf.setFontSize(16); pdf.setFont(undefined, 'bold'); pdf.setTextColor(0, 0, 0); 
             pdf.text("LAUDO RADIOGRÁFICO", pageWidth/2, 20, { align: "center" });
             
@@ -540,7 +570,7 @@
         // ================= GERAR PDF RELATÓRIO =================
         function atualizarGaleriaSalvas() {
             const div = document.getElementById('galeria-salvas'); div.innerHTML = "";
-            if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
+            if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-full text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
             imagensSalvas.forEach((img, idx) => { div.innerHTML += `<div class="relative neo-panel p-2 flex items-center justify-center"><img src="${img}" class="w-full h-32 object-cover rounded-xl border border-gray-300"><div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded shadow-md">Fig. ${idx+1}</div></div>`; });
         }
         
