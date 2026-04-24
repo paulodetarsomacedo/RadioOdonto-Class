@@ -21,8 +21,6 @@
         .neo-button:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); transform: scale(0.96); }
         .neo-pressed { background: var(--bg-color); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); border-radius: 0.75rem; color: var(--primary-color); font-weight: 600; }
         .neo-inset { background: var(--bg-color); box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light); border-radius: 1rem; }
-        
-        /* Negatoscópio - Maior Profundidade */
         .neo-screen { background: #1f2328; box-shadow: inset 10px 10px 20px #111316, inset -10px -10px 20px #2d333a; border-radius: 1rem; border: 1px solid #111316; }
 
         input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; }
@@ -32,27 +30,59 @@
         #canvas-wrapper, .canvas-container { touch-action: none !important; margin: 0 auto; width: 100%; height: 100%; }
         #overlay-body, #modal-resize-handle, #lightbox-body { touch-action: none !important; }
 
-        @keyframes loadingBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-        .animate-loading-bar { animation: loadingBar 1.5s infinite linear; }
         .neo-checkbox { appearance: none; width: 20px; height: 20px; border-radius: 0.25rem; background: var(--bg-color); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); display: inline-block; position: relative; cursor: pointer; }
         .neo-checkbox:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: var(--primary-color); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
+
+        /* Animações e Estilos do NOVO LOADING */
+        .neo-text {
+            color: var(--bg-color);
+            text-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+        }
+        .aura-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+        }
+        @keyframes approachLeft {
+            0% { transform: translateX(-80px) scale(0.7); opacity: 0; }
+            80% { transform: translateX(10px) scale(1.05); opacity: 1; }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+        @keyframes approachRight {
+            0% { transform: translateX(80px) scale(0.7); opacity: 0; }
+            80% { transform: translateX(-10px) scale(1.05); opacity: 1; }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+        .animate-approach-left { animation: approachLeft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .animate-approach-right { animation: approachRight 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- LOADING SCREEN -->
+    <!-- ================= LOADING SCREEN PREMIUM ================= -->
     <div id="loading-screen" class="fixed inset-0 z-[999] bg-[#e0e5ec] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-auto">
-        <div class="neo-panel p-8 flex flex-col items-center max-w-sm text-center mx-4 relative overflow-hidden">
-            <div class="w-28 h-28 neo-panel rounded-full flex items-center justify-center mb-6 border-4 border-[#e0e5ec] shadow-[8px_8px_16px_#a3b1c6,-8px_-8px_16px_#ffffff]">
-                <i class="fa-solid fa-tooth text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-blue-600 text-5xl filter drop-shadow-sm animate-pulse"></i>
+        
+        <!-- Título Esculpido (Neumórfico 3D) -->
+        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-[0.2em] mb-12 neo-text text-center px-4">
+            RADIOODONTO
+        </h1>
+        
+        <!-- Imagens Convergentes com Aura -->
+        <div class="flex items-center justify-center gap-3 sm:gap-6 mb-16 overflow-visible">
+            
+            <!-- Imagem Paulo -->
+            <div class="animate-approach-left w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-10 bg-[#e0e5ec]">
+                <img src="paulo.png" alt="Prof Paulo" class="w-full h-full object-cover rounded-full" onerror="this.src='https://via.placeholder.com/150?text=Paulo'">
             </div>
-            <h1 class="text-3xl font-extrabold text-gray-500 mb-2 tracking-widest uppercase">RadioOdonto</h1>
-            <div class="text-[10px] uppercase font-bold text-blue-500 tracking-[0.2em] mb-6">Educação e Laudo</div>
-            <div class="w-full h-3 neo-inset rounded-full overflow-hidden mb-6 relative">
-                <div class="absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full animate-loading-bar shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
+            
+            <!-- Imagem UNIFSA -->
+            <div class="animate-approach-right w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-0 bg-white">
+                <img src="unifsa.png" alt="UNIFSA" class="w-full h-full object-contain p-2 rounded-full" onerror="this.src='https://via.placeholder.com/150?text=UNIFSA'">
             </div>
-            <div class="text-xs font-bold text-gray-600 mb-1">Prof. Dr. Paulo de Tarso S. de Macedo</div>
-            <div class="text-[10px] text-gray-400 font-semibold tracking-wide">em parceria com o núcleo de T.I da UNIFSA</div>
+
+        </div>
+
+        <!-- Feedback Visual -->
+        <div class="text-[10px] sm:text-xs lg:text-sm font-extrabold text-blue-500 uppercase tracking-[0.3em] animate-pulse text-center px-4">
+            Sincronizando Ambiente de Laudos...
         </div>
     </div>
 
@@ -61,7 +91,6 @@
         <div class="text-center text-lg lg:text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto UNIFSA
         </div>
-        <!-- Responsividade: Navegação com max-width no Desktop -->
         <nav class="flex justify-around gap-2 px-2 pb-2 lg:max-w-4xl lg:mx-auto w-full">
             <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 lg:py-3 neo-pressed text-[11px] sm:text-sm flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm lg:text-lg"></i>Anatomia</button>
             <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm lg:text-lg"></i>Laudo</button>
@@ -70,14 +99,11 @@
         </nav>
     </header>
 
-    <!-- MAIN CONTAINER - Adicionado padding extra no Desktop (lg) -->
     <main class="flex-1 overflow-y-auto relative px-2 pb-2 lg:px-6 lg:pb-6 flex flex-col">
         
         <!-- ================= ABA ANATOMIA ================= -->
-        <!-- Responsividade: Lado a Lado (flex-row) no iPad/Desktop -->
         <div id="aba-anatomia" class="flex-1 flex flex-col lg:flex-row gap-3 h-full">
             
-            <!-- Barra Lateral Esquerda no Desktop / Topo no Mobile -->
             <div class="flex flex-col gap-2 lg:w-80 shrink-0">
                 <div class="neo-panel p-2 flex gap-2 flex-col sm:flex-row lg:flex-col items-center justify-between z-10">
                     <label class="neo-button px-3 py-3 cursor-pointer text-xs lg:text-sm flex items-center gap-2 text-blue-600 w-full justify-center font-bold">
@@ -115,25 +141,19 @@
                         <button onclick="clearCanvas()" class="neo-button py-2 lg:py-3 text-red-600"><i class="fa-solid fa-trash"></i> Limpar</button>
                     </div>
                 </div>
-
-                <!-- Botão de salvar no Desktop (Oculto no celular) -->
                 <button onclick="saveImage()" class="hidden lg:block mt-auto w-full py-4 neo-button text-blue-600 uppercase tracking-wider text-sm font-extrabold"><i class="fa-solid fa-save"></i> Enviar p/ Relatório</button>
             </div>
 
-            <!-- CANVAS WIDE -->
             <div class="flex-1 flex flex-col w-full h-full relative min-h-[50vh]">
                 <div id="canvas-wrapper" class="w-full h-full neo-screen relative flex justify-center items-center overflow-hidden">
                     <canvas id="fabric-canvas"></canvas>
                 </div>
-                <!-- Botão de salvar no Celular (Abaixo do canvas) -->
                 <button onclick="saveImage()" class="lg:hidden w-full py-3 neo-button text-blue-600 uppercase tracking-wider text-xs font-bold mt-2"><i class="fa-solid fa-save"></i> Enviar p/ Relatório Base</button>
             </div>
         </div>
 
         <!-- ================= ABA LAUDO ================= -->
         <div id="aba-laudo" class="hidden h-full flex-col lg:flex-row gap-4">
-            
-            <!-- Esquerda no iPad/Desktop -->
             <div class="flex flex-col gap-3 lg:w-5/12 xl:w-1/3">
                 <div class="h-[35vh] lg:h-[45vh] lg:flex-1 w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
                     <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Desenhe+na+aba+Anatomia">
@@ -153,16 +173,12 @@
                 </div>
             </div>
 
-            <!-- Direita no iPad/Desktop -->
             <div class="flex-1 flex flex-col gap-3 relative h-full">
                 <div class="text-xs lg:text-sm font-bold text-gray-500 px-2 flex justify-between">
                     <span><i class="fa-solid fa-list-check"></i> Achados Radiográficos (Editor):</span>
                 </div>
-                
                 <textarea id="laudo-editor" class="flex-1 neo-inset p-4 rounded-xl text-sm lg:text-base text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Use o botão 'Inserir Achado' abaixo ou digite os achados aqui..."></textarea>
-                
                 <button onclick="abrirModalAchados()" class="w-full neo-button py-3 lg:py-4 text-blue-600 font-extrabold text-sm lg:text-base"><i class="fa-solid fa-plus-circle"></i> Inserir Achado Rápido</button>
-                
                 <div class="neo-panel p-3 lg:p-4 flex flex-col gap-3">
                     <input type="text" id="laudo-nome-aluno" placeholder="Assinatura Acadêmico(a)..." class="neo-inset p-3 rounded-lg text-sm lg:text-base text-gray-700 w-full font-bold">
                     <div class="flex gap-2">
@@ -185,7 +201,7 @@
             </div>
         </div>
 
-        <!-- ================= ABA ESTUDO (Avançada) ================= -->
+        <!-- ================= ABA ESTUDO ================= -->
         <div id="aba-estudo" class="hidden h-full flex-col gap-3">
             <h2 class="text-lg lg:text-xl font-extrabold mb-1 text-center text-gray-500 uppercase tracking-widest mt-2">Reparos Anatômicos</h2>
             <div class="flex justify-center gap-3 mb-2">
@@ -197,7 +213,7 @@
         </div>
     </main>
 
-    <!-- ================= MODAL INSERIR ACHADO (HIERÁRQUICO) ================= -->
+    <!-- ================= MODAL INSERIR ACHADO ================= -->
     <div id="modal-achados" class="hidden fixed inset-0 z-[105] bg-[#e0e5ec] bg-opacity-95 flex flex-col justify-center lg:items-center p-2 lg:p-6 transition-opacity">
         <div class="neo-panel w-full lg:w-[600px] max-h-[85vh] rounded-3xl flex flex-col overflow-hidden border border-white shadow-2xl">
             <div class="p-5 bg-gray-100 border-b flex justify-between items-center rounded-t-3xl">
@@ -227,7 +243,7 @@
         </div>
     </div>
 
-    <!-- ================= OVERLAY MODAL (ARRASTAR) ================= -->
+    <!-- ================= OVERLAY MODAL ================= -->
     <div id="overlay-schema" class="hidden absolute top-48 left-6 neo-panel z-50 flex flex-col bg-[#e0e5ec] overflow-hidden" style="width: 250px; height: 250px; min-width: 150px; min-height: 150px; max-width: 95vw; max-height: 80vh;">
         <div id="overlay-header" class="px-3 py-2 flex justify-between items-center cursor-move border-b border-gray-300">
             <span class="font-bold text-[10px] lg:text-xs text-gray-500 tracking-wider"><i class="fa-solid fa-grip-lines mr-1"></i> ARRASTAR</span>
@@ -241,7 +257,7 @@
         </div>
     </div>
 
-    <!-- ================= LIGHTBOX (ESTUDO AVANÇADO) ================= -->
+    <!-- ================= LIGHTBOX ================= -->
     <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-[#e0e5ec] flex flex-col justify-start items-center p-4 lg:p-10 transition-opacity overflow-hidden">
         <button onclick="fecharLightbox()" class="absolute top-6 right-6 neo-button w-14 h-14 text-3xl text-red-500 font-bold z-10">&times;</button>
         <h3 id="lightbox-title" class="text-gray-600 text-xl lg:text-3xl mb-6 font-extrabold uppercase tracking-widest drop-shadow-sm text-center"></h3>
@@ -275,7 +291,9 @@
         let lbZoom = 1, lbPosX = 0, lbPosY = 0; let activeEstudoId = null;
 
         window.onload = () => {
-            setTimeout(() => { const loader = document.getElementById('loading-screen'); loader.classList.add('opacity-0'); setTimeout(() => loader.remove(), 1000); }, 2000);
+            // Loading Timer (aumentado para 3s para apreciar a arte e a animação se concluir)
+            setTimeout(() => { const loader = document.getElementById('loading-screen'); loader.classList.add('opacity-0'); setTimeout(() => loader.remove(), 1000); }, 3000);
+            
             initCanvas(); renderizarEstudos(esquemasAnatomicos);
             configurarDraggableModal(); configurarResizeModal(); configurarPanZoomOverlay(); configurarZoomPinçaCanvas(); configurarPanZoomLightbox();
             setTool('edit');
@@ -293,12 +311,12 @@
         };
 
         function mudarAba(aba) {['anatomia', 'laudo', 'relatorio', 'estudo'].forEach(a => {
-                document.getElementById(`aba-${a}`).classList.add('hidden'); document.getElementById(`aba-${a}`).classList.remove('flex');
+                document.getElementById(`aba-${a}`).classList.add('hidden'); document.getElementById(`aba-${a}`).classList.remove('flex', 'lg:flex-row');
                 document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-button transition text-gray-600";
             });
             const current = document.getElementById(`aba-${aba}`); 
             current.classList.remove('hidden'); 
-            current.classList.add(aba === 'anatomia' || aba === 'laudo' ? (window.innerWidth >= 1024 ? 'flex' : 'flex') : 'flex');
+            current.classList.add(aba === 'anatomia' || aba === 'laudo' ? (window.innerWidth >= 1024 ? 'lg:flex-row' : 'flex') : 'flex');
             
             document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-pressed transition text-blue-500";
             
@@ -319,11 +337,9 @@
             canvas.on('mouse:up', function() { this.isDragging = false; });
             canvas.on('mouse:wheel', function(opt) { var zoom = canvas.getZoom() * (0.999 ** opt.e.deltaY); if (zoom > 10) zoom = 10; if (zoom < 0.1) zoom = 0.1; canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom); opt.e.preventDefault(); opt.e.stopPropagation(); });
             
-            // REDIMENSIONAMENTO INTELIGENTE (RESIZEOBSERVER) P/ IPAD/DESKTOP
             const resizeObserver = new ResizeObserver(() => {
                 if (canvas && wrapper.clientWidth > 0 && wrapper.clientHeight > 0) {
-                    canvas.setWidth(wrapper.clientWidth);
-                    canvas.setHeight(wrapper.clientHeight);
+                    canvas.setWidth(wrapper.clientWidth); canvas.setHeight(wrapper.clientHeight);
                     canvas.calcOffset(); canvas.renderAll();
                 }
             });
@@ -344,8 +360,6 @@
                     img.set({ originX: 'center', originY: 'center', left: canvas.width / 2, top: canvas.height / 2, scaleX: scale, scaleY: scale });
                     canvas.setViewportTransform([1, 0, 0, 1, 0, 0]); canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
                     imgLaudoSource = f.target.result; syncLaudoImage();
-                    
-                    // Rolar pro canvas em telas menores
                     if(window.innerWidth < 1024) document.getElementById('canvas-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             };
@@ -377,7 +391,6 @@
             alert("Sucesso! Imagem salva no Relatório Base.");
         }
 
-        // ================= ESTUDOS AVANÇADOS =================
         function renderizarEstudos(lista) {
             const grid = document.getElementById('estudo-grid'); grid.innerHTML = "";
             const select = document.getElementById('overlay-selector'); 
@@ -398,7 +411,6 @@
         function atualizarLightboxTransform() { document.getElementById('lightbox-img').style.transform = `translate(${lbPosX}px, ${lbPosY}px) scale(${lbZoom})`; }
         function configurarPanZoomLightbox() { const lbBody = document.getElementById('lightbox-body'); let isDragging = false, startX, startY; let distInicial = null, zoomInicial = 1; lbBody.addEventListener('wheel', (e) => { e.preventDefault(); lbZoom *= e.deltaY < 0 ? 1.1 : 0.9; if(lbZoom<0.2)lbZoom=0.2; if(lbZoom>6)lbZoom=6; atualizarLightboxTransform(); }); const downEvent = (e) => { if(e.touches && e.touches.length === 2) { distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = lbZoom; return; } isDragging = true; lbBody.style.cursor = 'grabbing'; startX = getClientX(e) - lbPosX; startY = getClientY(e) - lbPosY; }; const moveEvent = (e) => { if(e.touches && e.touches.length === 2 && distInicial) { e.preventDefault(); lbZoom = Math.min(Math.max(zoomInicial * (Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) / distInicial), 0.2), 6); atualizarLightboxTransform(); return; } if(!isDragging) return; e.preventDefault(); lbPosX = getClientX(e) - startX; lbPosY = getClientY(e) - startY; atualizarLightboxTransform(); }; const upEvent = () => { isDragging = false; lbBody.style.cursor = 'grab'; distInicial = null; }; lbBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent); lbBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent); }
 
-        // ================= OVERLAY ARRASTAR =================
         function mostrarOverlay(url) { const overlay = document.getElementById('overlay-schema'); if (!url) { overlay.classList.add('hidden'); return; } olZoom = 1; olPosX = 0; olPosY = 0; atualizarOverlayTransform(); document.getElementById('overlay-img').src = url; overlay.classList.remove('hidden'); }
         function fecharOverlay() { document.getElementById('overlay-schema').classList.add('hidden'); document.getElementById('overlay-selector').value = ""; }
         function configurarDraggableModal() { const overlay = document.getElementById('overlay-schema'); const header = document.getElementById('overlay-header'); let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; header.addEventListener('touchstart', dragStart, {passive: false}); header.addEventListener('mousedown', dragStart); function dragStart(e) { if(e.target.tagName.toLowerCase() === 'button') return; e.preventDefault(); pos3 = getClientX(e); pos4 = getClientY(e); document.onmouseup = closeDrag; document.ontouchend = closeDrag; document.onmousemove = elementDrag; document.ontouchmove = elementDrag; } function elementDrag(e) { e.preventDefault(); pos1 = pos3 - getClientX(e); pos2 = pos4 - getClientY(e); pos3 = getClientX(e); pos4 = getClientY(e); overlay.style.top = (overlay.offsetTop - pos2) + "px"; overlay.style.left = (overlay.offsetLeft - pos1) + "px"; } function closeDrag() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; } }
@@ -406,7 +418,6 @@
         function atualizarOverlayTransform() { document.getElementById('overlay-img').style.transform = `translate(${olPosX}px, ${olPosY}px) scale(${olZoom})`; }
         function configurarPanZoomOverlay() { const olBody = document.getElementById('overlay-body'); let isDragging = false, startX, startY; let distInicial = null, zoomInicial = 1; olBody.addEventListener('wheel', (e) => { e.preventDefault(); olZoom *= e.deltaY < 0 ? 1.1 : 0.9; if(olZoom<0.2)olZoom=0.2; if(olZoom>5)olZoom=5; atualizarOverlayTransform(); }); const downEvent = (e) => { if(e.touches && e.touches.length === 2) { distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = olZoom; return; } isDragging = true; olBody.style.cursor = 'grabbing'; startX = getClientX(e) - olPosX; startY = getClientY(e) - olPosY; }; const moveEvent = (e) => { if(e.touches && e.touches.length === 2 && distInicial) { e.preventDefault(); olZoom = Math.min(Math.max(zoomInicial * (Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) / distInicial), 0.2), 5); atualizarOverlayTransform(); return; } if(!isDragging) return; e.preventDefault(); olPosX = getClientX(e) - startX; olPosY = getClientY(e) - startY; atualizarOverlayTransform(); }; const upEvent = () => { isDragging = false; olBody.style.cursor = 'grab'; distInicial = null; }; olBody.addEventListener('mousedown', downEvent); document.addEventListener('mousemove', moveEvent); document.addEventListener('mouseup', upEvent); olBody.addEventListener('touchstart', downEvent, {passive: false}); document.addEventListener('touchmove', moveEvent, {passive: false}); document.addEventListener('touchend', upEvent); }
 
-        // ================= CONSTRUTOR DE ACHADOS HIERÁRQUICO =================
         function syncLaudoImage() {
             if(!canvas) return;
             const currentZoom = canvas.getZoom(); const currentVpt = canvas.viewportTransform.slice();
@@ -476,7 +487,6 @@
             fecharModalAchados();
         }
 
-        // ================= GERADOR DE PDF PADRÃO OURO (LAUDO) =================
         async function gerarPDFLaudo(compartilhar = false) {
             const textoLaudo = document.getElementById('laudo-editor').value;
             if(!textoLaudo.trim()) { alert("O laudo está vazio! Digite os achados."); return; }
@@ -567,7 +577,6 @@
             } else { pdf.save(nomeArquivo); }
         }
 
-        // ================= GERAR PDF RELATÓRIO =================
         function atualizarGaleriaSalvas() {
             const div = document.getElementById('galeria-salvas'); div.innerHTML = "";
             if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-full text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
