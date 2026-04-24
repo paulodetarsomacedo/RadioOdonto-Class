@@ -60,7 +60,6 @@
             <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto UNIFSA
         </div>
         <nav class="flex justify-around gap-2 px-2 pb-2">
-            <!-- Ordem Solicitada -->
             <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 neo-pressed text-[11px] sm:text-xs flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm"></i>Anatomia</button>
             <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm"></i>Laudo</button>
             <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 neo-button text-[11px] sm:text-xs flex flex-col items-center gap-1"><i class="fa-solid fa-images text-sm"></i>Relatório</button>
@@ -91,7 +90,13 @@
                     <button onclick="setTool('edit')" id="btn-edit" class="neo-pressed p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-pointer text-base"></i> Selecionar</button>
                     <button onclick="setTool('pan')" id="btn-pan" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-blue-500"><i class="fa-solid fa-hand text-base"></i> Mover</button>
                     <button onclick="setTool('draw')" id="btn-draw" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-red-500"><i class="fa-solid fa-pen text-base"></i> Desenhar</button>
-                    <div class="neo-button p-1 flex flex-col items-center justify-center"><div class="w-6 h-6 rounded-full border-2 border-white shadow-inner overflow-hidden relative"><input type="color" id="color-picker" value="#ffff00" class="absolute -top-2 -left-2 w-10 h-10"></div></div>
+                    
+                    <div class="neo-button p-1 flex flex-col items-center justify-center">
+                        <div class="w-6 h-6 rounded-full border-2 border-white shadow-inner overflow-hidden relative">
+                            <input type="color" id="color-picker" value="#ffff00" class="absolute -top-2 -left-2 w-10 h-10">
+                        </div>
+                    </div>
+
                     <button onclick="addText()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-font text-base"></i> Texto</button>
                     <button onclick="addArrow()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-arrow-right-long text-base"></i> Seta</button>
                     <button onclick="addPolygon()" class="neo-button p-1 flex flex-col items-center justify-center gap-1 text-gray-700"><i class="fa-solid fa-play text-base"></i> Área</button>
@@ -104,7 +109,6 @@
                 </div>
             </div>
 
-            <!-- CANVAS -->
             <div id="canvas-wrapper" class="flex-1 min-h-[45vh] neo-screen relative flex justify-center items-center overflow-hidden">
                 <canvas id="fabric-canvas"></canvas>
             </div>
@@ -114,10 +118,10 @@
 
         <!-- ================= ABA LAUDO (GERADOR PDF AVANÇADO) ================= -->
         <div id="aba-laudo" class="hidden h-full flex-col gap-2">
-            <!-- Negatoscópio do Laudo -->
-            <div class="h-[35vh] w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
+            
+            <div class="h-[30vh] w-full neo-screen flex items-center justify-center p-2 rounded-xl overflow-hidden relative">
                 <img id="laudo-img-preview" class="max-h-full max-w-full object-contain filter drop-shadow-md" src="https://via.placeholder.com/600x400?text=Desenhe+na+aba+Anatomia">
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] px-2 py-1 rounded">Visualização</div>
+                <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-[10px] px-2 py-1 rounded">Visualização do Laudo</div>
             </div>
 
             <!-- Meta Dados -->
@@ -144,7 +148,11 @@
                 
                 <div class="neo-panel p-2 flex flex-col gap-2 mt-1">
                     <input type="text" id="laudo-nome-aluno" placeholder="Assinatura Acadêmico(a)..." class="neo-inset p-2 rounded-lg text-sm text-gray-700 w-full font-bold">
-                    <button onclick="gerarPDFLaudo()" class="w-full neo-pressed py-3 text-red-500 font-extrabold text-sm"><i class="fa-solid fa-file-pdf"></i> Gerar e Baixar Laudo PDF</button>
+                    <div class="flex gap-2">
+                        <!-- Corrigido: Agora ambas as funções passam os parâmetros corretamente! -->
+                        <button onclick="gerarPDFLaudo(false)" class="flex-1 neo-pressed py-3 text-red-500 font-extrabold text-sm"><i class="fa-solid fa-file-pdf"></i> Baixar Laudo</button>
+                        <button onclick="gerarPDFLaudo(true)" class="flex-1 neo-pressed py-3 text-green-500 font-extrabold text-sm"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,8 +163,9 @@
             <div id="galeria-salvas" class="neo-inset flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
                 <p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>
             </div>
-            <div class="neo-panel p-4 grid grid-cols-1 gap-3">
-                <button onclick="gerarPDFRelatorio()" class="w-full py-3 neo-button text-red-500 text-sm font-bold"><i class="fa-solid fa-file-pdf"></i> Baixar Imagens Base (PDF)</button>
+            <div class="neo-panel p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="gerarPDFRelatorio(false)" class="w-full py-3 neo-button text-red-500 text-sm font-bold"><i class="fa-solid fa-file-pdf"></i> Baixar (PDF)</button>
+                <button onclick="gerarPDFRelatorio(true)" class="w-full py-3 neo-button text-green-500 text-sm font-bold"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
             </div>
         </div>
 
@@ -383,9 +392,7 @@
             const cat = document.getElementById('achado-categoria').value; const container = document.getElementById('achado-campos'); 
             if(!cat) { container.innerHTML = `<p class="text-gray-400 text-xs italic text-center mt-10">Selecione uma categoria acima.</p>`; return; }
             
-            // Campo padrão hierárquico
-            let htmlBase = `<label class="text-xs font-bold text-gray-500 uppercase">Dente / Região Associada</label>
-                            <input type="text" id="ach-dente-geral" placeholder="Ex: 11, 36, Maxila..." class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">`;
+            let htmlBase = `<label class="text-xs font-bold text-gray-500 uppercase">Dente / Região Associada</label><input type="text" id="ach-dente-geral" placeholder="Ex: 11, 36, Maxila..." class="neo-inset p-3 rounded-lg text-sm text-gray-700 w-full outline-none mb-3">`;
             let htmlExtra = '';
 
             if (cat === 'dente') { htmlExtra = `<p class="text-xs text-gray-400 italic font-bold">Isso criará o título do dente no laudo. Os próximos achados associados a ele ficarão indentados abaixo.</p>`; } 
@@ -404,7 +411,6 @@
             const editor = document.getElementById('laudo-editor');
             let textoAtual = editor.value;
 
-            // Dente/Tópico Principal
             if (cat === 'dente') {
                 const titulo = isNaN(denteInput) && denteInput !== '' ? `Região de ${denteInput}:` : `Dente ${denteInput}:`;
                 editor.value += (textoAtual.endsWith('\n') || !textoAtual ? '' : '\n\n') + titulo + '\n    ➢ ';
@@ -420,7 +426,6 @@
             else if (cat === 'periodontal') { const terco = document.getElementById('ach-perda-terco').value; const vert = document.getElementById('ach-perda-vertical').checked; const esf = document.getElementById('ach-perda-esfumacamento').checked; achadoTexto = `Perda óssea periodontal atingindo o ${terco}.`; if(vert) achadoTexto += ` Perda óssea vertical na região identificada.`; if(esf) achadoTexto += ` Esfumaçamento da crista óssea alveolar presente.`; } 
             else if (cat === 'anomalia') { const tipo = document.getElementById('ach-anomalia-tipo').value; achadoTexto = `Anomalia identificada: ${tipo}.`; }
 
-            // Lógica Hierárquica
             let appendText = "";
             if (denteInput) {
                 const regexDente = isNaN(denteInput) ? `Região de ${denteInput}:` : `Dente ${denteInput}:`;
@@ -440,8 +445,8 @@
             fecharModalAchados();
         }
 
-        // ================= GERADOR DE PDF PADRÃO OURO (LAUDO) =================
-        async function gerarPDFLaudo() {
+        // ================= GERADOR DE PDF (LAUDO CORRIGIDO) =================
+        async function gerarPDFLaudo(compartilhar = false) {
             const textoLaudo = document.getElementById('laudo-editor').value;
             if(!textoLaudo.trim()) { alert("O laudo está vazio! Digite os achados."); return; }
             const nomeAluno = document.getElementById('laudo-nome-aluno').value.trim();
@@ -467,7 +472,6 @@
 
             let yOffset = 60;
 
-            // Imagem com Borda Neumórfica (Fundo Cinza)
             if(imgLaudo && !imgLaudo.includes("placeholder")) {
                 try {
                     const imgProps = pdf.getImageProperties(imgLaudo); const maxWidth = pageWidth - 40; 
@@ -484,7 +488,6 @@
             pdf.text("ACHADOS RADIOGRÁFICOS", 15, yOffset);
             yOffset += 8;
 
-            // Parser de Textos (Negrito para Dente XX e Recuo para ➢)
             pdf.setFontSize(11); pdf.setTextColor(40, 40, 40);
             const linhas = textoLaudo.split('\n');
             
@@ -494,7 +497,6 @@
                 let isBullet = str.startsWith('➢');
                 let indentX = isBullet ? 22 : 15;
 
-                // Encontra "Dente XX:" ou "Região de XX:"
                 let match = str.match(/^((Dente|Região de)\s[A-Za-z0-9]+\s?:)/i);
                 
                 if (match && !isBullet) {
@@ -516,7 +518,6 @@
                 yOffset += 2; 
             }
 
-            // Rodapé / Disclaimer
             const footerY = 275;
             pdf.setDrawColor(150, 150, 150); pdf.line(15, footerY - 5, pageWidth - 15, footerY - 5);
             pdf.setFontSize(7); pdf.setTextColor(120, 120, 120); pdf.setFont(undefined, 'italic');
@@ -536,13 +537,14 @@
             } else { pdf.save(nomeArquivo); }
         }
 
+        // ================= GERAR PDF RELATÓRIO =================
         function atualizarGaleriaSalvas() {
             const div = document.getElementById('galeria-salvas'); div.innerHTML = "";
             if(imagensSalvas.length === 0) { div.innerHTML = `<p class="text-gray-400 col-span-2 text-sm italic w-full text-center py-10">Nenhuma imagem salva ainda.</p>`; return; }
             imagensSalvas.forEach((img, idx) => { div.innerHTML += `<div class="relative neo-panel p-2 flex items-center justify-center"><img src="${img}" class="w-full h-32 object-cover rounded-xl border border-gray-300"><div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded shadow-md">Fig. ${idx+1}</div></div>`; });
         }
-
-        async function gerarPDFRelatorio() {
+        
+        async function gerarPDFRelatorio(compartilhar = false) {
             if(imagensSalvas.length === 0) { alert("Nenhuma imagem base salva."); return; }
             const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = pdf.internal.pageSize.getWidth();
             pdf.setFontSize(22); pdf.setTextColor(59, 130, 246); pdf.text("Relatório de Imagens Base", 15, 20);
@@ -557,7 +559,13 @@
                 pdf.addImage(imgData, 'JPEG', xOffset, yOffset, pdfWidth, pdfHeight);
                 yOffset += pdfHeight + 10;
             }
-            pdf.save("Imagens_Base_RadioOdonto.pdf");
+            const nomeArquivo = "Imagens_Base_RadioOdonto.pdf";
+            if (compartilhar && navigator.canShare) {
+                try {
+                    const pdfBlob = pdf.output('blob'); const file = new File([pdfBlob], nomeArquivo, { type: "application/pdf" });
+                    await navigator.share({ files:[file], title: 'Relatório de Imagens RadioOdonto', text: `Imagens em anexo.` });
+                } catch (e) { pdf.save(nomeArquivo); }
+            } else { pdf.save(nomeArquivo); }
         }
     </script>
 </body>
