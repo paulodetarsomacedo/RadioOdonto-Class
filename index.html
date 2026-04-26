@@ -62,8 +62,8 @@
 <div id="loading-screen" class="fixed inset-0 z-[999] bg-[#e0e5ec] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-auto">
         
     <!-- Título Neumórfico Azul e Maior -->
-    <h1 class="text-5xl sm:text-6xl lg:text-8xl font-black tracking-[0.2em] mb-12 neo-text text-center px-4">
-        RADIOODONTO
+   <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-normal sm:tracking-[0.2em] mb-12 neo-text text-center px-4">
+    RADIOODONTO
     </h1>
     
     <!-- Imagens Convergentes com Aura -->
@@ -179,7 +179,7 @@
             </div>
 
             <div class="flex-1 flex flex-col gap-3 relative h-full">
-                <div class="text-xs lg:text-sm font-bold text-gray-500 px-2 flex justify-between">
+                <div class="text-sm lg:text-base font-bold text-gray-500 px-2 flex justify-between">
                     <span><i class="fa-solid fa-list-check"></i> Achados Radiográficos (Editor):</span>
                 </div>
                 <textarea id="laudo-editor" class="flex-1 neo-inset p-4 rounded-xl text-sm lg:text-base text-gray-700 outline-none resize-none font-medium leading-relaxed" placeholder="Use o botão 'Inserir Achado' abaixo ou digite os achados aqui..."></textarea>
@@ -365,11 +365,34 @@ function mudarAba(aba) {
             resizeObserver.observe(wrapper);
         }
 
-        function configurarZoomPinçaCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper'); let distInicial = null, zoomInicial = 1;
-            wrapper.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { e.preventDefault(); distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zoomInicial = canvas.getZoom(); } }, {passive: false});
-            wrapper.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && distInicial) { e.preventDefault(); let distAtual = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); let novoZoom = Math.min(Math.max(zoomInicial * (distAtual / distInicial), 0.1), 10); canvas.zoomToPoint(new fabric.Point((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2), novoZoom); } }, {passive: false});
+  // SUBSTITUA TODA A FUNÇÃO configurarZoomPinçaCanvas PELA VERSÃO ABAIXO
+function configurarZoomPinçaCanvas() {
+    const wrapper = document.getElementById('canvas-wrapper');
+    let distInicial = null, zoomInicial = 1;
+
+    // Impede o comportamento padrão do navegador para QUALQUER toque que comece no canvas
+    wrapper.addEventListener('touchstart', (e) => {
+        if (e.touches.length >= 1) {
+            e.preventDefault(); // <-- ISSO BLOQUEIA A ROLAGEM DA PÁGINA
         }
+        if (e.touches.length === 2) {
+            distInicial = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            zoomInicial = canvas.getZoom();
+        }
+    }, {passive: false}); // passive:false é crucial para o preventDefault funcionar no iOS
+
+    // Controla o movimento de pinça
+    wrapper.addEventListener('touchmove', (e) => {
+        if (e.touches.length >= 1) {
+            e.preventDefault(); // <-- ISSO BLOQUEIA A ROLAGEM DURANTE O ARRASTO
+        }
+        if (e.touches.length === 2 && distInicial) {
+            let distAtual = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            let novoZoom = Math.min(Math.max(zoomInicial * (distAtual / distInicial), 0.1), 10);
+            canvas.zoomToPoint(new fabric.Point((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2), novoZoom);
+        }
+    }, {passive: false});
+}
 
         document.getElementById('image-upload').addEventListener('change', function(e) {
             const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
