@@ -35,9 +35,9 @@
 
         /* Animações e Estilos do NOVO LOADING */
         .neo-text {
-            color: var(--bg-color);
-            text-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-        }
+    color: var(--primary-color);
+    text-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+}
         .aura-glow {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
         }
@@ -58,44 +58,49 @@
 <body class="flex flex-col h-screen">
 
     <!-- ================= LOADING SCREEN PREMIUM ================= -->
-    <div id="loading-screen" class="fixed inset-0 z-[999] bg-[#e0e5ec] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-auto">
+<!-- SUBSTITUA TODA A SUA DIV DE LOADING POR ESTA -->
+<div id="loading-screen" class="fixed inset-0 z-[999] bg-[#e0e5ec] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-auto">
         
-        <!-- Título Esculpido (Neumórfico 3D) -->
-        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-[0.2em] mb-12 neo-text text-center px-4">
-            RADIOODONTO
-        </h1>
+    <!-- Título Neumórfico Azul e Maior -->
+    <h1 class="text-5xl sm:text-6xl lg:text-8xl font-black tracking-[0.2em] mb-12 neo-text text-center px-4">
+        RADIOODONTO
+    </h1>
+    
+    <!-- Imagens Convergentes com Aura -->
+    <div class="flex items-center justify-center gap-3 sm:gap-6 mb-16 overflow-visible">
         
-        <!-- Imagens Convergentes com Aura -->
-        <div class="flex items-center justify-center gap-3 sm:gap-6 mb-16 overflow-visible">
-            
-            <!-- Imagem Paulo -->
-            <div class="animate-approach-left w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-10 bg-[#e0e5ec]">
-                <img src="paulo.png" alt="Prof Paulo" class="w-full h-full object-cover rounded-full" onerror="this.src='https://via.placeholder.com/150?text=Paulo'">
-            </div>
-            
-            <!-- Imagem UNIFSA -->
-            <div class="animate-approach-right w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-0 bg-white">
-                <img src="unifsa.png" alt="UNIFSA" class="w-full h-full object-contain p-2 rounded-full" onerror="this.src='https://via.placeholder.com/150?text=UNIFSA'">
-            </div>
-
+        <!-- Imagem Paulo -->
+        <div class="animate-approach-left w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-10 bg-[#e0e5ec]">
+            <img src="paulo.png" alt="Prof Paulo" class="w-full h-full object-cover rounded-full" onerror="this.src='https://via.placeholder.com/150?text=Paulo'">
+        </div>
+        
+        <!-- Imagem UNIFSA -->
+        <div class="animate-approach-right w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center border-[6px] border-[#e0e5ec] aura-glow z-0 bg-white">
+            <img src="unifsa.png" alt="UNIFSA" class="w-full h-full object-contain p-2 rounded-full" onerror="this.src='https://via.placeholder.com/150?text=UNIFSA'">
         </div>
 
-        <!-- Feedback Visual -->
-        <div class="text-[10px] sm:text-xs lg:text-sm font-extrabold text-blue-500 uppercase tracking-[0.3em] animate-pulse text-center px-4">
-            Sincronizando Ambiente de Laudos...
-        </div>
     </div>
+
+    <!-- Feedback Visual -->
+    <div class="text-[10px] sm:text-xs lg:text-sm font-extrabold text-blue-500 uppercase tracking-[0.3em] animate-pulse text-center px-4">
+        Sincronizando Ambiente de Laudos...
+    </div>
+</div>
 
     <!-- HEADER E NAVEGAÇÃO -->
     <header class="pt-3 pb-1 flex flex-col gap-2 z-10 lg:pt-4 lg:pb-2">
-        <div class="text-center text-lg lg:text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
-            <i class="fa-solid fa-tooth text-blue-500"></i> RadioOdonto UNIFSA
-        </div>
-        <nav class="flex justify-around gap-2 px-2 pb-2 lg:max-w-4xl lg:mx-auto w-full">
-            <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 lg:py-3 neo-pressed text-[11px] sm:text-sm flex flex-col items-center gap-1 text-blue-500"><i class="fa-solid fa-pen-ruler text-sm lg:text-lg"></i>Anatomia</button>
-            <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-file-medical text-sm lg:text-lg"></i>Laudo</button>
-            <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-images text-sm lg:text-lg"></i>Relatório</button>
-            <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm lg:text-lg"></i>Estudo</button>
+      <div class="text-center text-lg lg:text-2xl font-bold text-gray-600 tracking-wide drop-shadow-sm flex items-center justify-center gap-3">
+    <!-- Ícone trocado pela imagem -->
+    <img src="unifsa.png" class="w-8 h-8 lg:w-10 lg:h-10 object-contain" alt="UNIFSA Logo">
+    RadioOdonto UNIFSA
+</div>
+      <!-- SUBSTITUA SUA NAV POR ESTA -->
+<nav class="neo-inset p-1 rounded-full flex justify-around gap-1 mx-2 lg:max-w-4xl lg:mx-auto w-full relative">
+    <button onclick="mudarAba('anatomia')" id="tab-btn-anatomia" class="flex-1 py-2 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1 text-blue-500 rounded-full"><i class="fa-solid fa-pen-ruler text-sm lg:text-lg"></i>Anatomia</button>
+    <button onclick="mudarAba('laudo')" id="tab-btn-laudo" class="flex-1 py-2 text-[11px] sm:text-sm flex flex-col items-center gap-1 rounded-full"><i class="fa-solid fa-file-medical text-sm lg:text-lg"></i>Laudo</button>
+    <button onclick="mudarAba('relatorio')" id="tab-btn-relatorio" class="flex-1 py-2 text-[11px] sm:text-sm flex flex-col items-center gap-1 rounded-full"><i class="fa-solid fa-images text-sm lg:text-lg"></i>Relatório</button>
+    <button onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 text-[11px] sm:text-sm flex flex-col items-center gap-1 rounded-full"><i class="fa-solid fa-book-medical text-sm lg:text-lg"></i>Estudo</button>
+</nav>ton onclick="mudarAba('estudo')" id="tab-btn-estudo" class="flex-1 py-2 lg:py-3 neo-button text-[11px] sm:text-sm flex flex-col items-center gap-1"><i class="fa-solid fa-book-medical text-sm lg:text-lg"></i>Estudo</button>
         </nav>
     </header>
 
@@ -310,19 +315,33 @@
             });
         };
 
-        function mudarAba(aba) {['anatomia', 'laudo', 'relatorio', 'estudo'].forEach(a => {
-                document.getElementById(`aba-${a}`).classList.add('hidden'); document.getElementById(`aba-${a}`).classList.remove('flex', 'lg:flex-row');
-                document.getElementById(`tab-btn-${a}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-button transition text-gray-600";
-            });
-            const current = document.getElementById(`aba-${aba}`); 
-            current.classList.remove('hidden'); 
-            current.classList.add(aba === 'anatomia' || aba === 'laudo' ? (window.innerWidth >= 1024 ? 'lg:flex-row' : 'flex') : 'flex');
-            
-            document.getElementById(`tab-btn-${aba}`).className = "flex-1 py-2 lg:py-3 text-[11px] sm:text-sm flex flex-col items-center gap-1 neo-pressed transition text-blue-500";
-            
-            if(aba === 'anatomia' && canvas) canvas.calcOffset();
-            if(aba === 'laudo') syncLaudoImage(); 
-        }
+     // SUBSTITUA TODA A FUNÇÃO mudarAba PELA VERSÃO ABAIXO
+function mudarAba(aba) {
+    // Reseta todos os botões para o estado inativo
+    ['anatomia', 'laudo', 'relatorio', 'estudo'].forEach(a => {
+        document.getElementById(`aba-${a}`).classList.add('hidden');
+        document.getElementById(`aba-${a}`).classList.remove('flex', 'lg:flex-row');
+        
+        let btn = document.getElementById(`tab-btn-${a}`);
+        btn.classList.remove('neo-button', 'text-blue-500'); // Remove o efeito de botão elevado
+        btn.classList.add('text-gray-500');
+    });
+
+    const current = document.getElementById(`aba-${aba}`);
+    current.classList.remove('hidden');
+    current.classList.add('flex');
+    if(aba === 'anatomia' || aba === 'laudo') {
+        if(window.innerWidth >= 1024) current.classList.add('lg:flex-row');
+    }
+
+    // Aplica o efeito de botão elevado apenas no botão ativo
+    const btnAtivo = document.getElementById(`tab-btn-${aba}`);
+    btnAtivo.classList.add('neo-button', 'text-blue-500');
+    btnAtivo.classList.remove('text-gray-500');
+    
+    if(aba === 'anatomia' && canvas) canvas.calcOffset();
+    if(aba === 'laudo') syncLaudoImage();
+}
 
         function getClientX(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX; }
         function getClientY(e) { return e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY; }
